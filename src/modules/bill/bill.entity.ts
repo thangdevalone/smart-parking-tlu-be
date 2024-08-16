@@ -31,7 +31,7 @@ export class Bill {
       default: () => 'CURRENT_TIMESTAMP',
     },
   )
-  createAt: Date;
+  createdAt: Date;
 
   @Column(
     {
@@ -40,6 +40,6 @@ export class Bill {
       onUpdate: 'CURRENT_TIMESTAMP',
     },
   )
-  updateAt: Date;
+  updatedAt: Date;
 
 }

@@ -2,6 +2,7 @@ import { BaseEntity, DeleteResult, Repository } from 'typeorm'
 import { IBaseService } from './i.base.service'
 import { EntityId } from 'typeorm/repository/EntityId'
 import { LoggerService } from 'src/logger'
+import { PaginationDto } from 'src/types'
 
 export class BaseService<T extends BaseEntity, R extends Repository<T>> implements IBaseService<T> {
   protected readonly repository: R
@@ -12,8 +13,12 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     this.logger = logger
   }
 
-  index(): Promise<T[]> {
-    return this.repository.find()
+  index(filter?: any): Promise<T[]> {
+    return this.repository.find({ where: filter })
+  }
+
+  findOne(filter: any): Promise<T> {
+    return this.repository.findOne({ where: filter })
   }
 
   findById(id: EntityId): Promise<T> {
@@ -25,12 +30,42 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
   store(data: any): Promise<T> {
+    console.log(data)
     return this.repository.save(data)
   }
 
   async update(id: EntityId, data: any): Promise<T> {
     await this.repository.update(id, data)
     return this.findById(id)
+  }
+
+  async paginate(pagination: PaginationDto, filed?: string): Promise<{ paginate: T[], currentPage: number, totalPages: number, isLastPage: boolean }> {
+    const { limit = 10, page = 1, sortBy = 'id', sortType = 'asc', search = '' } = pagination;
+
+    const order: { [key: string]: 'ASC' | 'DESC' } = {
+      [sortBy]: sortType.toUpperCase() as 'ASC' | 'DESC',
+    };
+
+
+    const queryBuilder = this.repository.createQueryBuilder('entity');
+    if (search.length > 0 && filed) {
+      queryBuilder.orWhere(`entity.${filed} LIKE :search`, { search: `%${search}%` });
+    }
+
+    const [results, total] = await queryBuilder
+      .orderBy(order)
+      .offset((page - 1) * limit)
+      .limit(limit)
+      .getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
+    const isLastPage = page >= totalPages;
+
+    return {
+      paginate: results,
+      currentPage: page,
+      totalPages,
+      isLastPage,
+    };
   }
 
   delete(id: EntityId): Promise<DeleteResult> {

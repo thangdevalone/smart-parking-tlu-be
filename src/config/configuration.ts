@@ -9,8 +9,11 @@ export const configuration = () => ({
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
   },
-  auth : {
-    secret: process.env.SECRET,
-    expiresIn: process.env.EXPIRESIN
+  auth: {
+    jwt: {
+      secret: process.env.JWT_SECRET,
+      refreshSecret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: process.env.EXPIRESIN
+    },
   }
 })

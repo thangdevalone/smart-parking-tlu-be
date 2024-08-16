@@ -21,7 +21,7 @@ export class CardType {
       default: () => 'CURRENT_TIMESTAMP',
     },
   )
-  createAt: Date;
+  createdAt: Date;
 
   @Column(
     {
@@ -30,6 +30,6 @@ export class CardType {
       onUpdate: 'CURRENT_TIMESTAMP',
     },
   )
-  updateAt: Date;
+  updatedAt: Date;
 
 }

@@ -27,7 +27,7 @@ export class History {
       default: () => 'CURRENT_TIMESTAMP',
     },
   )
-  createAt: Date;
+  createdAt: Date;
 
   @Column(
     {
@@ -36,5 +36,5 @@ export class History {
       onUpdate: 'CURRENT_TIMESTAMP',
     },
   )
-  updateAt: Date;
+  updatedAt: Date;
 }

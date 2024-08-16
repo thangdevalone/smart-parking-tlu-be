@@ -1,48 +1,49 @@
-import { BaseEntity, Column, ManyToOne, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm'
-import { Exclude, Expose } from 'class-transformer'
-import { Role } from '../role'
+import { BaseEntity, Column, ManyToOne, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Role } from '../role/role.entity';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column()
-    fullName: string
+  @Column()
+  fullName: string;
 
-    @Column()
-    phone: string
+  @Unique(['phone'])
+  @Column({ nullable: true })
+  phone?: string;
 
-    @Unique(['email'])
-    @Column()
-    email: string
+  @Unique(['email'])
+  @Column()
+  email: string;
 
-    @Exclude()
-    @Column()
-    password: string
+  @Exclude()
+  @Column()
+  password: string;
 
-    @Unique(['userCode'])
-    @Column()
-    userCode: string
+  @Unique(['userCode'])
+  @Column()
+  userCode: string;
 
-    @ManyToOne(() => Role, role => role.users)
-    role: Role;
+  @ManyToOne(() => Role, role => role.id)
+  role: Role;
 
-    @Column(
-        {
-          type: 'timestamp',
-          default: () => 'CURRENT_TIMESTAMP',
-        },
-      )
-      createAt: Date;
-    
-      @Column(
-        {
-          type: 'timestamp',
-          default: () => 'CURRENT_TIMESTAMP',
-          onUpdate: 'CURRENT_TIMESTAMP',
-        },
-      )
-      updateAt: Date;
+  @Column(
+    {
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP',
+    },
+  )
+  createdAt: Date;
+
+  @Column(
+    {
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP',
+      onUpdate: 'CURRENT_TIMESTAMP',
+    },
+  )
+  updatedAt: Date;
 
 }

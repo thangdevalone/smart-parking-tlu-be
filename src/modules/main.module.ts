@@ -8,9 +8,7 @@ import { CardTypeModule } from './cardtype';
 
 @Module({
   imports: [
-    UserHttpModule,RoleModule,HistoryModule,BillModule,CardModule,CardTypeModule
+    UserHttpModule, RoleModule, HistoryModule, BillModule, CardModule, CardTypeModule,
   ],
 })
-export class MainModule {
-
-}
+export class MainModule { }
