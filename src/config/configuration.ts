@@ -15,5 +15,11 @@ export const configuration = () => ({
       refreshSecret: process.env.JWT_REFRESH_SECRET,
       expiresIn: process.env.EXPIRESIN
     },
+  },
+  mail: {
+    mail_app: process.env.EMAIL_APP,
+    mail_app_password: process.env.EMAIL_APP_PASSWORD,
+    mail_host: process.env.MAIL_HOST,
+    mail_port: process.env.MAIL_PORT,
   }
 })

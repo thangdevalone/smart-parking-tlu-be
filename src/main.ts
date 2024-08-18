@@ -1,10 +1,9 @@
-import {NestFactory} from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import {AppModule} from './app.module';
 import {HttpException, HttpStatus, Logger as NestLogger, ValidationError, ValidationPipe} from '@nestjs/common';
 import {ConfigService} from "@nestjs/config";
 import {middleware} from "./app.middleware";
 import {ResponseInterceptor} from "./handlers";
-
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {});
@@ -15,6 +14,7 @@ async function bootstrap() {
       return new HttpException(Object.values(validationErrors[0].constraints)[0], HttpStatus.BAD_REQUEST);
     }
   }));
+
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.enableShutdownHooks();
   middleware(app);

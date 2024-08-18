@@ -1,13 +1,12 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { forgotPasswordDto, LoginDto, Payload, RegisterDto, ResetPasswordDto } from './auth.dtos';
+import { forgotPasswordDto, LoginDto, Payload, refreshTokenDto, RegisterDto, ResetPasswordDto } from './auth.dtos';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards';
 import { ReqUser } from 'src/decorators';
 import { UserService } from 'src/modules';
 import { Messages } from 'src/config';
 import { SystemRoles } from 'src/types';
-import { randomPassword } from 'src/utils';
 import { hashSync } from 'bcrypt';
 
 @Controller('auth')
@@ -28,7 +27,15 @@ export class AuthController {
 
     @Post('forgot-password')
     public async forgotPassword(@Body() data: forgotPasswordDto) {
-        console.log(data);
+        const { email } = data;
+        return await this.authService.forgotPassword(email);
+    }
+
+    @Post('refresh-token')
+    public async refreshToken(
+        @Body() data: refreshTokenDto,
+    ) {
+        return await this.authService.refreshToken(data.refreshToken);
     }
 
     @Post('reset-password')

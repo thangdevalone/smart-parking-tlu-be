@@ -1,10 +1,10 @@
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Patch, Post, UseInterceptors } from "@nestjs/common";
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, Patch, Post, UseInterceptors } from "@nestjs/common";
 import { RoleService } from "./role.service";
-import { create } from "domain";
-import { CreateRoleDto } from "./role.dto";
+import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
 import { Pagination } from "src/decorators";
 import { PaginationDto } from "src/types";
 import { ApiQuery } from "@nestjs/swagger";
+import { AdminRequired, ManageOrAdminRequired } from "../user/decorators/permission.decorator";
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('roles')
@@ -12,6 +12,7 @@ export class RoleController {
     constructor(private readonly roleService: RoleService) { }
 
     @Post()
+        // @ManageOrAdminRequired()
     public async createRole(
         @Body() createRole: CreateRoleDto,
     ) {
@@ -27,14 +28,22 @@ export class RoleController {
     public async getRoles(
         @Pagination() pagination: PaginationDto,
     ) {
-        console.log(pagination)
         return this.roleService.getRoles(pagination);
     }
 
     @Delete(':idRole')
-    public async deleteRole() { }
+    public async deleteRole(
+        @Param('idRole') idRole: string,
+    ) {
+        return await this.roleService.deleteRole(idRole);
+    }
 
-    @Patch('idRole')
-    public async updateRole() { }
+    @Patch(':idRole')
+    public async updateRole(
+        @Param('idRole') idRole: string,
+        @Body() data: UpdateRoleDto
+    ) {
+        return await this.roleService.updateRole(idRole, data);
+    }
 
 }

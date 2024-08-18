@@ -5,6 +5,8 @@ import { hashSync } from 'bcrypt';
 import { Messages } from 'src/config';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { randomPassword } from 'src/utils';
+import { EmailService } from 'src/modules/mail';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,7 @@ export class AuthService {
         private user: UserService,
         private role: RoleService,
         private jwt: JwtService,
+        private email: EmailService,
         private config: ConfigService,
     ) { }
 
@@ -36,7 +39,7 @@ export class AuthService {
 
         if (data.password !== data.confirmPassword) throw new Error(Messages.auth.passwordNotMatch);
 
-        let role = data.role
+        let role = data.role;
 
         role = role ?? (await this.role.getRoleUser()).id;
 
@@ -54,7 +57,43 @@ export class AuthService {
         }
     }
 
+    async refreshToken(rfToken: string) {
+        const payload = this.jwt.decode(rfToken) as JwtPayload;
+
+        const user = await this.user.findById(payload.id);
+
+        if (!user) throw new Error(Messages.auth.notFound);
+
+        return {
+            data: await this.signUser(user),
+            message: Messages.auth.refreshToken
+        }
+    }
+
     async forgotPassword(email: string) {
+        const user = await this.user.findByEmail(email);
+
+        if (!user) throw new Error(Messages.auth.notFound);
+
+        const newPassword = randomPassword(10);
+
+        const passwordHash = hashSync(newPassword, 10);
+
+        await this.user.update(user.id, { password: passwordHash });
+
+        const html = `Mật khẩu mới của bạn là ${newPassword}`;
+        const subject = 'Cấp lại mật khẩu';
+        const data = {
+            to: email,
+            html,
+            subject
+        };
+        await this.email.sendMail(data);
+
+        return {
+            message: Messages.auth.passwordSent
+        };
+
 
     }
 

@@ -1,14 +1,12 @@
 import type { INestApplication } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from "express";
 
 export function middleware(app: INestApplication): INestApplication {
-  app.use(cookieParser());
 
   const options: CorsOptions = {
-    origin: true, // Cho phép mọi nguồn gốc (bạn có thể chỉ định cụ thể hơn nếu cần)
+    origin: true,
     credentials: true
   };
   app.enableCors(options);
@@ -41,7 +39,6 @@ export function middleware(app: INestApplication): INestApplication {
     },
   });
 
-  // Middleware khác
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ extended: true, limit: "10mb" }));
 

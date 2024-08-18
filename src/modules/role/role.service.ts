@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Role } from './role.entity';
 import { BaseService } from 'src/shared';
 import { LoggerService } from 'src/logger';
-import { CreateRoleDto } from './role.dto';
+import { CreateRoleDto, UpdateRoleDto } from './role.dto';
 import { Messages } from 'src/config';
 import { PaginationDto } from 'src/types';
 import { RoleRepository } from './role.repository';
@@ -49,8 +49,7 @@ export class RoleService extends BaseService<Role, RoleRepository> {
         };
     }
 
-    public async updateRole(id: any, updateRoleDto: any) {
-
+    public async updateRole(id: any, updateRoleDto: UpdateRoleDto) {
         return {
             data: await this.repository.update(id, updateRoleDto),
             message: Messages.role.roleUpodated

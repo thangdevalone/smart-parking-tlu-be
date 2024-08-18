@@ -6,7 +6,6 @@ import { LoggerService } from 'src/logger';
 import { Repository } from 'typeorm';
 import { UserRepository } from './user.repository';
 import { compare } from 'bcrypt';
-import { EntityId } from 'typeorm/repository/EntityId';
 
 @Injectable()
 export class UserService extends BaseService<User, UserRepository> {
@@ -20,6 +19,10 @@ export class UserService extends BaseService<User, UserRepository> {
 
     async findByUser(email: string, userCode: string) {
         return await this.repository.findOne({ where: { email, userCode } });
+    }
+
+    async findByEmail(email: string) {
+        return await this.repository.findOne({ where: { email } });
     }
 
     async findById(id: number) {

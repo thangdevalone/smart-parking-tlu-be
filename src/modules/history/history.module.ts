@@ -3,7 +3,6 @@ import {HistoryController} from './history.controller'
 import {HistoryService} from './history.service'
 
 @Module({
-  imports: [],
   providers: [HistoryService],
   exports: [HistoryService],
   controllers: [HistoryController],

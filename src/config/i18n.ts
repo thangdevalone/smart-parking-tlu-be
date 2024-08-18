@@ -18,5 +18,11 @@ export const Messages = {
         wrongEmailPassword: 'Wrong email or password',
         unauthorized: "Unauthorized",
         passwordChanged: "Password changed successfully",
+        passwordReset: 'Password reset successfully',
+        passwordSent: 'Password sent to email',
+        refreshToken: 'Refresh token success',
     },
+    common: {
+        actionNotPermitted: 'Action not permitted',
+    }
 }

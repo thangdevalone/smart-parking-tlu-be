@@ -5,7 +5,7 @@ import { RoleService } from './role.service';
 import { Role } from './role.entity';
 import { LoggerService } from 'src/logger';
 import { RoleRepository } from './role.repository';
-
+import { PermissionGuard } from '../user';
 @Module({
   imports: [TypeOrmModule.forFeature([Role])],
   providers: [RoleService, LoggerService, RoleRepository],

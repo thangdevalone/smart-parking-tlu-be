@@ -32,7 +32,7 @@ export class RegisterDto {
     fullName: string;
 
     @ApiProperty({
-        default: "example@gmai.com"
+        default: "example@gmail.com"
     })
     @IsEmail({}, {
         message: "INVALID_EMAIL"
@@ -63,9 +63,6 @@ export class RegisterDto {
     })
     userCode: string;
 
-    @ApiProperty({
-        default: 6
-    })
     @IsOptional()
     role: number;
 
@@ -123,4 +120,13 @@ export interface Payload {
 export interface JwtSign {
     access_token: string;
     refresh_token: string;
+}
+
+
+export class refreshTokenDto {
+    @ApiProperty({
+        default: 'refresh token'
+    })
+    @IsNotEmpty({ message: "REFRESH_TOKEN_REQUIRED" })
+    refreshToken: string;
 }
