@@ -26,7 +26,15 @@ export class UserService extends BaseService<User, UserRepository> {
     }
 
     async findById(id: number) {
-        return await this.repository.findOne({ where: { id } });
+        // tooi muoon lay ra user va gia ve ca role
+
+        const user = await this.repository.createQueryBuilder('user')
+            .leftJoinAndSelect('user.role', 'role')
+            .where('user.id = :id', { id })
+            .addSelect(['role.id', 'role.name'])
+            .getOne();
+
+        return user;
     }
 
     async validateUser(email: string, password: string) {

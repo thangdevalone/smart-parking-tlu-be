@@ -2,12 +2,11 @@ import { BaseEntity, Column, OneToMany, CreateDateColumn, Entity, PrimaryGenerat
 import { User } from '../user';
 
 @Entity('roles')
-@Unique(['name'])
 export class Role extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column({ nullable: true })

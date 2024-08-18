@@ -44,7 +44,7 @@ export class AuthController {
         const user = await this.user.findById(data.id);
         if (!user) throw new Error(Messages.auth.notFound);
 
-        if (user.id !== payload.id && !Object.values(SystemRoles).includes(payload.role.name as any)) throw new Error(Messages.auth.unauthorized);
+        if (user.id !== payload.id && ![SystemRoles.ADMIN, SystemRoles.MANAGE].includes(payload.role.name as any)) throw new Error(Messages.auth.unauthorized);
 
         if (data.password !== data.confirmPassword) throw new Error(Messages.auth.passwordNotMatch);
 
