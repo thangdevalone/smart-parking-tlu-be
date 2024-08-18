@@ -30,7 +30,6 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
   store(data: any): Promise<T> {
-    console.log(data)
     return this.repository.save(data)
   }
 

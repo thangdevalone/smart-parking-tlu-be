@@ -18,7 +18,7 @@ export class CardTypeController {
     public async createCardType(
         @Body() createCardTypeDto: CreateCradTypeDto
     ) {
-        return this.cardTypeService.createCardType(createCardTypeDto);
+        return await this.cardTypeService.createCardType(createCardTypeDto);
     }
 
     @Get()
@@ -31,7 +31,7 @@ export class CardTypeController {
     public async getCardTypes(
         @Pagination() pagination: PaginationDto,
     ) {
-        return this.cardTypeService.getCardTypes(pagination);
+        return await this.cardTypeService.getCardTypes(pagination);
     }
 
     @Delete(':idCardType')

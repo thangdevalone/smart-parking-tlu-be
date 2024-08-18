@@ -18,7 +18,6 @@ export const Pagination = createParamDecorator(
 
         const errors = await validate(paginationDto);
         if (errors.length > 0) {
-            console.log(errors);
             throw new BadRequestException('Invalid pagination parameters');
         }
 
