@@ -50,8 +50,17 @@ export class RoleService extends BaseService<Role, RoleRepository> {
     }
 
     public async updateRole(id: any, updateRoleDto: UpdateRoleDto) {
+
+        const role = await this.repository.findOne({ where: { id: +id } });
+
+        if (!role) throw new Error('Role not found');
+
+        Object.assign(role, updateRoleDto);
+
+        await this.repository.save(role);
+
         return {
-            data: await this.repository.update(id, updateRoleDto),
+            data: role,
             message: Messages.role.roleUpodated
         }
     }
