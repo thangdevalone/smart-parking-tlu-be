@@ -13,5 +13,5 @@ export const Permission = (...permissions: string[]) => {
 
 export const AdminRequired = () => Permission(Roles.ADMIN);
 export const ManageOrAdminRequired = () => Permission(Roles.ADMIN, Roles.MANAGE);
-export const ProtectRequired = () => Permission(Roles.ADMIN, Roles.MANAGE, Roles.PROTECT);
+export const ProtectOrManagerOrAdminRequired = () => Permission(Roles.ADMIN, Roles.MANAGE, Roles.PROTECT);
 export const UserRequired = () => Permission(Roles.ADMIN, Roles.MANAGE, Roles.USER);

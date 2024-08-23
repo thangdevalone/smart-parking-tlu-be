@@ -24,5 +24,14 @@ export const Messages = {
     },
     common: {
         actionNotPermitted: 'Action not permitted',
+    },
+    card: {
+        notCreated: 'Card not created',
+        notFound: 'Card not found',
+        deleted: 'Card deleted successfully',
+        created: 'Card created successfully',
+        alreadyExists: 'Card already exists',
+        cardUserNotFound: 'Card user not found',
+        cardUpodated: 'Card updated successfully',
     }
 }

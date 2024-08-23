@@ -6,7 +6,7 @@ import { BaseService } from 'src/shared';
 import { LoggerService } from 'src/logger';
 import { CreateRoleDto, UpdateRoleDto } from './role.dto';
 import { Messages } from 'src/config';
-import { PaginationDto } from 'src/types';
+import { PaginationDto, Roles, SystemRoles } from 'src/types';
 import { RoleRepository } from './role.repository';
 
 @Injectable()
@@ -19,13 +19,15 @@ export class RoleService extends BaseService<Role, RoleRepository> {
         super(repository, logger);
     }
 
-    public async createRole(createRole: CreateRoleDto) {
+    public async createRole(createRole: CreateRoleDto, isAdmin: boolean) {
 
         createRole.name = createRole.name.toLowerCase();
 
         const oldRole = await this.index({ name: createRole.name });
 
         if (oldRole.length > 0) throw new Error(Messages.role.alreadyExists);
+
+        if (createRole.name === SystemRoles.ADMIN && !isAdmin) throw new Error(Messages.common.actionNotPermitted)
 
         const role = this.store(createRole);
         if (!role) throw new NotFoundException(Messages.role.notCreated);
@@ -66,6 +68,6 @@ export class RoleService extends BaseService<Role, RoleRepository> {
     }
 
     public async getRoleUser() {
-        return (await this.repository.findOne({ where: { name: 'user' } }));
+        return (await this.repository.findOne({ where: { name: Roles.USER } }));
     }
 }

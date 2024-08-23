@@ -1,11 +1,12 @@
 import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, Patch, Post, UseGuards, UseInterceptors } from "@nestjs/common";
 import { RoleService } from "./role.service";
 import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
-import { Pagination } from "src/decorators";
-import { PaginationDto } from "src/types";
+import { Pagination, ReqUser } from "src/decorators";
+import { PaginationDto, SystemRoles } from "src/types";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { AdminRequired, ManageOrAdminRequired } from "../user/decorators/permission.decorator";
 import { JwtAuthGuard } from "src/auth/guards";
+import { Payload } from "src/auth";
 
 // @UseInterceptors(ClassSerializerInterceptor)
 @Controller('roles')
@@ -18,8 +19,10 @@ export class RoleController {
     @ManageOrAdminRequired()
     public async createRole(
         @Body() createRole: CreateRoleDto,
+        @ReqUser() payload: Payload
     ) {
-        return this.roleService.createRole(createRole);
+        const isAdmin = payload.role.name === SystemRoles.ADMIN
+        return this.roleService.createRole(createRole, isAdmin);
     }
 
     @Get()

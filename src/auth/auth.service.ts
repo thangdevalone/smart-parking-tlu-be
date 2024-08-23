@@ -26,7 +26,10 @@ export class AuthService {
 
         return {
             message: Messages.auth.loginSuccess,
-            data: this.signUser(user),
+            data: {
+                tokens: this.signUser(user),
+                user
+            },
             status: HttpStatus.OK
         };
 
@@ -65,7 +68,7 @@ export class AuthService {
         if (!user) throw new Error(Messages.auth.notFound);
 
         return {
-            data: await this.signUser(user),
+            data: this.signUser(user),
             message: Messages.auth.refreshToken
         }
     }
@@ -88,7 +91,8 @@ export class AuthService {
             html,
             subject
         };
-        await this.email.sendMail(data);
+
+        this.email.sendMail(data);
 
         return {
             message: Messages.auth.passwordSent

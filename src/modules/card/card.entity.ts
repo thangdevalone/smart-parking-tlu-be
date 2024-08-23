@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntit
 import { User } from '../user';
 import { CardType } from '../cardtype';
 import { Bill } from '../bill';
+import { CardStatus } from 'src/types';
 
 @Entity('cards')
 export class Card extends BaseEntity {
@@ -12,10 +13,14 @@ export class Card extends BaseEntity {
   cardCode: string;
 
   @Column()
-  licensePlate: string;
+  licensePlate?: string;
 
-  @Column()
-  cardStatus: string;
+  @Column({
+    type: 'enum',
+    enum: CardStatus,
+    default: CardStatus.ACTIVE,
+  })
+  cardStatus: CardStatus;
 
   @ManyToOne(() => User, user => user.id)
   user: User;
