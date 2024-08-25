@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsOptional } from "class-validator";
 import { Role } from "src/modules";
-import { SystemRoles } from "src/types";
 
 export class LoginDto {
     @ApiProperty({

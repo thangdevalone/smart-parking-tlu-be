@@ -1,9 +1,54 @@
-import { Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { UserService } from "./user.service";
+import { AdminRequired } from "./decorators";
+import { ApiQuery } from "@nestjs/swagger";
+import { Pagination, ReqUser } from "src/decorators";
+import { Payload } from "src/auth";
+import { UpdateUserDto } from "./user.dto";
+import { PaginationDto } from "src/types";
 
 @Controller('users')
 export class UserController {
     constructor(private readonly userService: UserService) { }
+
+    @Get()
+    @AdminRequired()
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'search', required: false, type: String })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'sortBy', required: false, type: String })
+    @ApiQuery({ name: 'sortType', required: false, type: String })
+    async getUsers(
+        @Pagination() pagination: PaginationDto,
+    ) {
+        return await this.userService.getUsers(pagination);
+    }
+
+    @Get(':id')
+    @AdminRequired()
+    async getUser(
+        @Param('id') id: string
+    ) {
+        return await this.userService.findById(+id)
+    }
+
+    @Patch(':id')
+    async updateUser(
+        @Param('id') id: string,
+        @ReqUser() user: Payload,
+        @Body() updateUserDto: UpdateUserDto
+    ) {
+        if (id !== user.id.toString()) throw new Error('Unauthorized');
+        return await this.userService.updateUser(id, updateUserDto);
+    }
+
+    @Delete(':id')
+    @AdminRequired()
+    async deleteUser(
+        @Param('id') id: string
+    ) {
+        return await this.userService.deleteUser(id);
+    }
 
 
 }

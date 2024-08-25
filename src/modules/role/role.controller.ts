@@ -4,7 +4,7 @@ import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
 import { Pagination, ReqUser } from "src/decorators";
 import { PaginationDto, SystemRoles } from "src/types";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
-import { AdminRequired, ManageOrAdminRequired } from "../user/decorators/permission.decorator";
+import { AdminRequired } from "../user/decorators/permission.decorator";
 import { JwtAuthGuard } from "src/auth/guards";
 import { Payload } from "src/auth";
 
@@ -16,7 +16,7 @@ export class RoleController {
     constructor(private readonly roleService: RoleService) { }
 
     @Post()
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async createRole(
         @Body() createRole: CreateRoleDto,
         @ReqUser() payload: Payload
@@ -26,7 +26,7 @@ export class RoleController {
     }
 
     @Get()
-    @ManageOrAdminRequired()
+    @AdminRequired()
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'search', required: false, type: String })
     @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -39,7 +39,7 @@ export class RoleController {
     }
 
     @Delete(':idRole')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async deleteRole(
         @Param('idRole') idRole: string,
     ) {
@@ -47,7 +47,7 @@ export class RoleController {
     }
 
     @Patch(':idRole')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async updateRole(
         @Param('idRole') idRole: string,
         @Body() data: UpdateRoleDto

@@ -6,6 +6,8 @@ import { LoggerService } from 'src/logger';
 import { Repository } from 'typeorm';
 import { UserRepository } from './user.repository';
 import { compare } from 'bcrypt';
+import { PaginationDto } from 'src/types';
+import { UpdateUserDto } from './user.dto';
 
 @Injectable()
 export class UserService extends BaseService<User, UserRepository> {
@@ -17,6 +19,26 @@ export class UserService extends BaseService<User, UserRepository> {
         super(repository, logger);
     }
 
+    async getUsers(pagination: PaginationDto) {
+        return this.paginate(pagination, 'fullName');
+    }
+
+    async updateUser(id: string, updateUser: UpdateUserDto) {
+        const user = await this.repository.findOne({ where: { id: +id } });
+
+        if (!user) throw new Error('User not found');
+
+        Object.assign(user, updateUser);
+
+        await this.repository.save(user);
+
+        return {
+            data: user,
+            message: 'User updated successfully',
+        };
+
+    }
+
     async findByUser(email: string, userCode: string) {
         return await this.repository.findOne({ where: { email, userCode } });
     }
@@ -26,8 +48,6 @@ export class UserService extends BaseService<User, UserRepository> {
     }
 
     async findById(id: number) {
-        // tooi muoon lay ra user va gia ve ca role
-
         const user = await this.repository.createQueryBuilder('user')
             .leftJoinAndSelect('user.role', 'role')
             .where('user.id = :id', { id })
@@ -53,5 +73,15 @@ export class UserService extends BaseService<User, UserRepository> {
             return user;
         }
         return null;
+    }
+
+    async deleteUser(id: string) {
+        const result = await this.repository.delete(id);
+        if (result.affected === 0) {
+            throw new Error('User not found');
+        }
+        return {
+            message: 'User deleted successfully',
+        };
     }
 }

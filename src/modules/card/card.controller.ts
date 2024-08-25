@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { CardService } from "./card.service";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
-import { ManageOrAdminRequired, ProtectOrManagerOrAdminRequired } from "../user";
+import { ProtectOrManagerOrAdminRequired, AdminRequired } from "../user";
 import { Pagination } from "src/decorators";
 import { PaginationDto } from "src/types";
 import { JwtAuthGuard } from "src/auth/guards";
@@ -35,7 +35,7 @@ export class CardController {
     }
 
     @Post()
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async createCard(
         @Body() createCradDto: CreateCardDto
     ) {
@@ -43,7 +43,7 @@ export class CardController {
     }
 
     @Patch('idCard')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async updateCard(
         @Param('idCard') idCard: string,
         @Body() updateCard: UpdateCardDto
@@ -52,7 +52,7 @@ export class CardController {
     }
 
     @Delete(':idCard')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async deleteCard(
         @Param('idCard') idCard: string
     ) {

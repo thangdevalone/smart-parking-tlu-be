@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@n
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/guards";
 import { CardTypeService } from "./cardtype.service";
-import { ManageOrAdminRequired } from "../user";
+import { AdminRequired } from "../user";
 import { CreateCradTypeDto, UpdateCardTypeDto } from "./cardtype.dto";
 import { Pagination } from "src/decorators";
 import { PaginationDto } from "src/types";
@@ -14,7 +14,7 @@ export class CardTypeController {
     constructor(private readonly cardTypeService: CardTypeService) { }
 
     @Post()
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async createCardType(
         @Body() createCardTypeDto: CreateCradTypeDto
     ) {
@@ -22,7 +22,7 @@ export class CardTypeController {
     }
 
     @Get()
-    @ManageOrAdminRequired()
+    @AdminRequired()
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'search', required: false, type: String })
     @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -35,7 +35,7 @@ export class CardTypeController {
     }
 
     @Delete(':idCardType')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async deleteCardType(
         @Param('idCardType') idCardType: string
     ) {
@@ -43,7 +43,7 @@ export class CardTypeController {
     }
 
     @Patch(':idCardType')
-    @ManageOrAdminRequired()
+    @AdminRequired()
     public async updateCardType(
         @Param('idCardType') idCardType: string,
         @Body() updateCardTypeDto: UpdateCardTypeDto
