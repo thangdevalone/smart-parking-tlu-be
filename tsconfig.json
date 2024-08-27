@@ -12,16 +12,14 @@
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "resolveJsonModule": true,
-    // "exactOptionalPropertyTypes": true,
-    // "noUncheckedIndexedAccess": true,
     "removeComments": true,
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    // https://github.com/Microsoft/TypeScript/issues/2577
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "multer"],
   },
   "include": ["typings/global.d.ts", "src/**/*", "test/**/*", "bin/**/*"],
   "exclude": ["node_modules"]

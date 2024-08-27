@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity } from 'typeorm';
 import { Card } from '../card';
 import { History } from '../history';
+import { BillStatus } from 'src/types';
 
 @Entity('bills')
 export class Bill extends BaseEntity {
@@ -16,8 +17,13 @@ export class Bill extends BaseEntity {
   @Column()
   price: number;
 
+  @Column({
+    type: 'enum',
+    enum: BillStatus,
+    default: BillStatus.UNPAID,
+  })
   @Column()
-  billStatus: string;
+  billStatus: BillStatus;
 
   @ManyToOne(() => Card, card => card.bills)
   card: Card;

@@ -15,4 +15,18 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
     ) {
         super(repository, logger);
     }
+
+
+    async getHistories() {
+    }
+
+    async getHistory() {
+    }
+
+    async createHistory() {
+    }
+
+    async updateHistory() {
+    }
+
 }

@@ -1,21 +1,24 @@
 import { Module } from '@nestjs/common';
-import { PermissionGuard, UserHttpModule } from './user';
+import { UserHttpModule, UserModule } from './user';
 import { RoleModule } from './role';
 import { HistoryModule } from './history';
 import { BillModule } from './bill';
 import { CardModule } from './card';
 import { CardTypeModule } from './cardtype';
 import { MailModule } from './mail';
+import { TicketModule } from './ticket';
 
 @Module({
   imports: [
     UserHttpModule,
+    UserModule,
     RoleModule,
     HistoryModule,
     BillModule,
     CardModule,
     CardTypeModule,
-    MailModule
+    MailModule,
+    TicketModule
   ],
 })
 export class MainModule { }

@@ -5,7 +5,7 @@ import { ApiQuery } from "@nestjs/swagger";
 import { Pagination, ReqUser } from "src/decorators";
 import { Payload } from "src/auth";
 import { UpdateUserDto } from "./user.dto";
-import { PaginationDto } from "src/types";
+import { PaginationDto, SystemRoles } from "src/types";
 
 @Controller('users')
 export class UserController {
@@ -38,7 +38,7 @@ export class UserController {
         @ReqUser() user: Payload,
         @Body() updateUserDto: UpdateUserDto
     ) {
-        if (id !== user.id.toString()) throw new Error('Unauthorized');
+        if (id !== user.id.toString() && user.role.name !== SystemRoles.ADMIN) throw new Error('Unauthorized');
         return await this.userService.updateUser(id, updateUserDto);
     }
 

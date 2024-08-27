@@ -14,4 +14,16 @@ export class BillService extends BaseService<Bill, BillRepository> {
     ) {
         super(billRepository, logger);
     }
+
+    async getBills() { }
+
+    async getBill(id: number) {
+    }
+
+    async createBill() {
+    }
+
+    async updateBill() {
+    }
+
 }
