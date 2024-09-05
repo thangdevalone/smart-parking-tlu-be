@@ -1,6 +1,7 @@
-import {CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, NestInterceptor} from "@nestjs/common";
-import {Observable, throwError} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+import { CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, NestInterceptor } from "@nestjs/common";
+import path from "path";
+import { Observable, throwError } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -37,6 +38,22 @@ export class ResponseInterceptor implements NestInterceptor {
 
     if (response.status) response.status(statusCode);
 
+    // xu ly truong hop gia ve co paginate thi sua thanh nhu sau 
+
+    if (res?.paginate) {
+      return {
+        path: request?.url,
+        message: res?.message || "",
+        status: statusCode,
+        data: res?.paginate,
+        pagination: {
+          page: res.page,
+          totalPages: res.totalPages,
+          totalItems: res.totalItems,
+          hasNext: res.hasNext
+        }
+      }
+    }
 
     return {
       path: request?.url,

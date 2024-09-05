@@ -38,7 +38,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     return this.findById(id)
   }
 
-  async paginate(pagination: PaginationDto, filed?: string): Promise<{ paginate: T[], currentPage: number, totalPages: number, isLastPage: boolean }> {
+  async paginate(pagination: PaginationDto, filed?: string): Promise<{ paginate: T[], page: number, totalPages: number, totalItems: number, hasNext: boolean }> {
     const { limit = 10, page = 1, sortBy = 'id', sortType = 'asc', search = '' } = pagination;
 
     const order: { [key: string]: 'ASC' | 'DESC' } = {
@@ -57,13 +57,13 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
       .limit(limit)
       .getManyAndCount();
     const totalPages = Math.ceil(total / limit);
-    const isLastPage = page >= totalPages;
 
     return {
       paginate: results,
-      currentPage: page,
+      page: page,
       totalPages,
-      isLastPage,
+      hasNext: page >= totalPages ? false : true,
+      totalItems: total,
     };
   }
 
