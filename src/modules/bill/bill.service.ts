@@ -7,7 +7,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { BillStatus } from "src/types";
 import { UpdateBillDto } from "./bill.dto";
 import { Messages } from "src/config";
-import { Not } from "typeorm";
+import { Card } from "../card";
 
 @Injectable()
 export class BillService extends BaseService<Bill, BillRepository> {
@@ -20,13 +20,12 @@ export class BillService extends BaseService<Bill, BillRepository> {
     }
 
 
-    async createBill(cardId: string, price: number, historyId: string) {
+    async createBill(cardId: string, price: number) {
         const bill = await this.store({
             card: cardId,
             price,
             billStatus: BillStatus.UNPAID,
             startDate: new Date(),
-            histories: historyId,
         })
 
         if (!bill) throw new NotFoundException(Messages.bill.notFound);
@@ -37,7 +36,8 @@ export class BillService extends BaseService<Bill, BillRepository> {
         const bill = await this.findOne({ id });
         if (!bill) throw new NotFoundException(Messages.bill.notFound);
 
-        Object.assign(bill, updateBillDeto);
+        bill.billStatus = updateBillDeto.billStatus;
+        bill.endDate = new Date();
 
         await this.repository.save(bill);
 
@@ -47,4 +47,14 @@ export class BillService extends BaseService<Bill, BillRepository> {
         }
     }
 
+    async getDetail(card: Card) {
+        const bill = await this.repository.findOne({
+            where: {
+                card: card,  
+                billStatus: BillStatus.UNPAID
+            }
+        });
+        if (!bill) throw new NotFoundException(Messages.bill.notFound);
+        return bill;
+    }
 }

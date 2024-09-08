@@ -28,9 +28,6 @@ export class Card extends BaseEntity {
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
 
-  @OneToMany(() => Bill, bill => bill.id)
-  bills?: Bill[];
-
   @Column(
     {
       type: 'timestamp',

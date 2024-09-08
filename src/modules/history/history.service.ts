@@ -18,10 +18,11 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
         super(repository, logger);
     }
 
-    async createHistory(imageIn: string) {
+    async createHistory(imageIn: string, billId: string) {
         const history = await this.store({
             imageIn,
             timeIn: new Date(),
+            bill: billId
         });
         if (!history) throw new NotFoundException(Messages.history.notCreated);
 
@@ -34,7 +35,8 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
         const history = await this.findOne({ id });
         if (!history) throw new NotFoundException(Messages.history.notFound);
 
-        Object.assign(history, updateHistoryDto);
+        history.imageOut = updateHistoryDto.imageOut;
+        history.timeOut = new Date();
 
         await this.repository.save(history);
 

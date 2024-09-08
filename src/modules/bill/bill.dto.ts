@@ -1,3 +1,5 @@
+import { BillStatus } from "src/types";
+
 export class CreateBillDto {
     startDate: Date;
     price: number;
@@ -5,5 +7,5 @@ export class CreateBillDto {
 
 
 export class UpdateBillDto {
-
+    billStatus: BillStatus;
 }

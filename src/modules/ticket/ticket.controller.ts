@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, UseInterceptors, UseGuards, UploadedFiles } from '@nestjs/common';
+import { Controller,  Post, Body, UseInterceptors, UseGuards, UploadedFiles, Res } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 import { TicketCheckinDto } from './ticket.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards';
 import { GuardOrAdminRequired } from '../user';
-
+import { Response } from 'express';
 @Controller('ticket')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -29,7 +29,7 @@ export class TicketController {
         @Body() checkinDto: TicketCheckinDto,
         @UploadedFiles() file: { image: Express.Multer.File },
     ) {
-        return await this.ticketService.checkin(checkinDto.cardId, file.image);
+        return await this.ticketService.checkin(checkinDto.cardId, file.image[0]);
     }
 
     @Post('checkout')
@@ -49,5 +49,11 @@ export class TicketController {
         ),
     )
     @GuardOrAdminRequired()
-    public async checkout() { }
+    public async checkout(
+        @Body() checkinDto: TicketCheckinDto,
+        @UploadedFiles() file: { image: Express.Multer.File },
+        @Res() res: Express.Response,
+    ) {
+        return await this.ticketService.checkout(checkinDto.cardId, file.image[0], res as Response);
+    }
 }

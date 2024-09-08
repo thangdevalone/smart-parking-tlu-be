@@ -18,6 +18,9 @@ export class History extends BaseEntity {
   @Column({ nullable: true })
   timeOut?: Date;
 
+  @ManyToOne(() => Bill, bill => bill.id)
+  bill: Bill;
+
   @Column(
     {
       type: 'timestamp',

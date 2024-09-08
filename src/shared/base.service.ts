@@ -48,7 +48,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     }
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`entity.${sortBy}`, sortType === 'ASC' ? 'ASC' : 'DESC')
+      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
