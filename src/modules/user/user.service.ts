@@ -35,8 +35,17 @@ export class UserService extends BaseService<User, UserRepository> {
             .getManyAndCount();
         const totalPages = Math.ceil(total / limit);
 
+        const filteredResults = results.map(user => ({
+            ...user,
+            role: {
+                id: user.role.id,
+                name: user.role.name,
+                description: user.role.description,
+            },
+        }));
+
         return {
-            paginate: results,
+            paginate: filteredResults,
             page: page,
             totalPages,
             hasNext: page >= totalPages ? false : true,
