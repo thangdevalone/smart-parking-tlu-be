@@ -21,5 +21,8 @@ export const configuration = () => ({
     mail_app_password: process.env.EMAIL_APP_PASSWORD,
     mail_host: process.env.MAIL_HOST,
     mail_port: process.env.MAIL_PORT,
+  },
+  service: {
+    ai: process.env.SERVICE_AI
   }
 })

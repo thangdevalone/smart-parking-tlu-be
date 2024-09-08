@@ -1,15 +1,24 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
 import { CardStatus } from "src/types";
 
 export class CreateCardDto {
     @ApiProperty({ type: String, default: "card code example" })
     @IsString({ message: "INVALID_STRING" })
     cardCode: string
+
+    @ApiProperty({ type: Number })
+    @IsNumber({}, { message: "INVALID_NUMBER" })
+    cardType: number
 }
 
 export class UpdateCardDto {
     @IsOptional()
     @IsEnum(CardStatus)
     cardStatus?: CardStatus;
+
+
+    @IsOptional()
+    @IsString()
+    licensePlate?: string
 }

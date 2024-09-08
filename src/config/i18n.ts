@@ -33,5 +33,32 @@ export const Messages = {
         alreadyExists: 'Card already exists',
         cardUserNotFound: 'Card user not found',
         cardUpodated: 'Card updated successfully',
-    }
+    },
+    cardType: {
+        notCreated: 'Card type not created',
+        notFound: 'Card type not found',
+        deleted: 'Card type deleted successfully',
+        created: 'Card type created successfully',
+        alreadyExists: 'Card type already exists',
+        cardTypeUserNotFound: 'Card type user not found',
+        cardTypeUpodated: 'Card type updated successfully',
+    },
+    bill: {
+        notCreated: 'Bill not created',
+        notFound: 'Bill not found',
+        deleted: 'Bill deleted successfully',
+        created: 'Bill created successfully',
+        alreadyExists: 'Bill already exists',
+        billUserNotFound: 'Bill user not found',
+        billUpdated: 'Bill updated successfully',
+    },
+    history: {
+        notCreated: 'History not created',
+        notFound: 'History not found',
+        deleted: 'History deleted successfully',
+        created: 'History created successfully',
+        alreadyExists: 'History already exists',
+        historyUserNotFound: 'History user not found',
+        historyUpdated: 'History updated successfully',
+    },
 }

@@ -38,9 +38,6 @@ export class AuthController {
         return await this.authService.refreshToken(data.refreshToken);
     }
 
-    @Post()
-    public async logout() { }
-
     @Post('reset-password')
     @UseGuards(JwtAuthGuard)
     public async resetPassword(@Body() data: ResetPasswordDto, @ReqUser() payload: Payload) {

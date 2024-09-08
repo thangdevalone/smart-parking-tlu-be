@@ -1,8 +1,9 @@
-import { BaseEntity, DeleteResult, Repository } from 'typeorm'
+import { BaseEntity, DeleteResult, EntityTarget, In, Repository } from 'typeorm'
 import { IBaseService } from './i.base.service'
 import { EntityId } from 'typeorm/repository/EntityId'
 import { LoggerService } from 'src/logger'
 import { PaginationDto } from 'src/types'
+import { Card } from 'src/modules'
 
 export class BaseService<T extends BaseEntity, R extends Repository<T>> implements IBaseService<T> {
   protected readonly repository: R
@@ -39,12 +40,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
   async paginate(pagination: PaginationDto, filed?: string): Promise<{ paginate: T[], page: number, totalPages: number, totalItems: number, hasNext: boolean }> {
-    const { limit = 10, page = 1, sortBy = 'id', sortType = 'asc', search = '' } = pagination;
-
-    const order: { [key: string]: 'ASC' | 'DESC' } = {
-      [sortBy]: sortType.toUpperCase() as 'ASC' | 'DESC',
-    };
-
+    const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
 
     const queryBuilder = this.repository.createQueryBuilder('entity');
     if (search.length > 0 && filed) {
@@ -52,7 +48,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     }
 
     const [results, total] = await queryBuilder
-      .orderBy(order)
+      .addOrderBy(`entity.${sortBy}`, sortType === 'ASC' ? 'ASC' : 'DESC')
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
@@ -66,6 +62,19 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
       totalItems: total,
     };
   }
+
+
+  async deleteMultiple(ids: number[]): Promise<DeleteResult> {
+    const entityTarget = this.repository.target;
+    const res = await this.repository.createQueryBuilder()
+      .delete()
+      .from(entityTarget) 
+      .where('id IN (:...ids)', { ids })
+      .execute();
+
+    return res;
+  }
+
 
   delete(id: EntityId): Promise<DeleteResult> {
     return this.repository.delete(id)

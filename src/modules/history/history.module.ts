@@ -10,7 +10,7 @@ import { UserHttpModule } from '../user'
 @Module({
   imports: [TypeOrmModule.forFeature([History]), forwardRef(() => UserHttpModule)],
   providers: [HistoryService, HistoryRepository, LoggerService],
-  exports: [HistoryService],
+  exports: [HistoryService, HistoryRepository],
   controllers: [HistoryController],
 })
 export class HistoryModule {

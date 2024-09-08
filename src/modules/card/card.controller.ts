@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { CardService } from "./card.service";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
-import { ProtectOrManagerOrAdminRequired, AdminRequired } from "../user";
+import { GuardOrAdminRequired, AdminRequired } from "../user";
 import { Pagination } from "src/decorators";
-import { PaginationDto } from "src/types";
+import { DeleteMultipleDto, PaginationDto } from "src/types";
 import { JwtAuthGuard } from "src/auth/guards";
 import { CreateCardDto, UpdateCardDto } from "./card.dto";
 
@@ -14,7 +14,7 @@ export class CardController {
     constructor(protected readonly card: CardService) { }
 
     @Get()
-    @ProtectOrManagerOrAdminRequired()
+    @AdminRequired()
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'search', required: false, type: String })
     @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -27,7 +27,7 @@ export class CardController {
     }
 
     @Get(':idCard')
-    @ProtectOrManagerOrAdminRequired()
+    @AdminRequired()
     public async getCardDetail(
         @Param('idCard') idCard: string
     ) {
@@ -51,11 +51,11 @@ export class CardController {
         return await this.card.updateCard(idCard, updateCard)
     }
 
-    @Delete(':idCard')
+    @Delete()
     @AdminRequired()
     public async deleteCard(
-        @Param('idCard') idCard: string
+        @Body() deleteCard: DeleteMultipleDto
     ) {
-        return await this.card.deleteCard(idCard);
+        return await this.card.deleteCard(deleteCard.ids);
     }
 }

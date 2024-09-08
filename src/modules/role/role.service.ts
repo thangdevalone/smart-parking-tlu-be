@@ -41,11 +41,9 @@ export class RoleService extends BaseService<Role, RoleRepository> {
         return this.paginate(pagination, 'name');
     }
 
-    public async deleteRole(id: any) {
-        const result = await this.repository.delete(id);
-        if (result.affected === 0) {
-            throw new Error('Role not found');
-        }
+    public async deleteRole(ids: number[]) {
+        const result = await this.deleteMultiple(ids);
+       
         return {
             message: 'Role deleted successfully',
         };

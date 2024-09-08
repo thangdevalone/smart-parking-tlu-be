@@ -40,12 +40,8 @@ export class CardTypeService extends BaseService<CardType, CardTypeRepository> {
         return this.paginate(pagination, 'cardTypeName');
     }
 
-    async deleteCardType(idCardType: string) {
-        const result = await this.repository.delete(idCardType);
-
-        if (result.affected === 0) {
-            throw new Error('Card Type not found');
-        }
+    async deleteCardType(ids:number[]) {
+        await this.deleteMultiple(ids);
 
         return {
             message: 'Card Type deleted successfully',

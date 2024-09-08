@@ -1,13 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { AdminRequired } from "./decorators";
-import { ApiQuery } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { Pagination, ReqUser } from "src/decorators";
 import { Payload } from "src/auth";
 import { UpdateUserDto } from "./user.dto";
-import { PaginationDto, SystemRoles } from "src/types";
+import { DeleteMultipleDto, PaginationDto, SystemRoles } from "src/types";
+import { JwtAuthGuard } from "src/auth/guards";
 
 @Controller('users')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 export class UserController {
     constructor(private readonly userService: UserService) { }
 
@@ -42,12 +45,12 @@ export class UserController {
         return await this.userService.updateUser(id, updateUserDto);
     }
 
-    @Delete(':id')
+    @Delete()
     @AdminRequired()
     async deleteUser(
-        @Param('id') id: string
+        @Body() deleteUserDto :DeleteMultipleDto
     ) {
-        return await this.userService.deleteUser(id);
+        return await this.userService.deleteUser(deleteUserDto.ids);
     }
 
 

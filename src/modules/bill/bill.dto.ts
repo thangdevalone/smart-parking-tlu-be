@@ -1,5 +1,6 @@
 export class CreateBillDto {
-   
+    startDate: Date;
+    price: number;
 }
 
 

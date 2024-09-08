@@ -11,8 +11,8 @@ export class Bill extends BaseEntity {
   @Column()
   startDate: Date;
 
-  @Column()
-  endDate: Date;
+  @Column({ nullable: true })
+  endDate?: Date;
 
   @Column()
   price: number;
@@ -25,10 +25,10 @@ export class Bill extends BaseEntity {
   @Column()
   billStatus: BillStatus;
 
-  @ManyToOne(() => Card, card => card.bills)
+  @ManyToOne(() => Card, card => card.id)
   card: Card;
 
-  @OneToMany(() => History, history => history.bill)
+  @OneToMany(() => History, history => history.id)
   histories: History[];
 
   @Column(

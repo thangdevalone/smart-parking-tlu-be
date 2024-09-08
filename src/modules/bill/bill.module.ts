@@ -11,7 +11,7 @@ import { BillRepository } from './bill.repository'
 @Module({
   imports: [TypeOrmModule.forFeature([Bill]), forwardRef(() => UserHttpModule)],
   providers: [BillService, LoggerService, BillRepository],
-  exports: [BillService],
+  exports: [BillService, BillRepository],
   controllers: [BillController],
 })
 export class BillModule {

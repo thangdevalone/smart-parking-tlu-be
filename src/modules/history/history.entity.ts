@@ -9,17 +9,14 @@ export class History extends BaseEntity {
   @Column()
   imageIn: string;
 
-  @Column()
-  imageOut: string;
+  @Column({ nullable: true })
+  imageOut?: string;
 
   @Column()
   timeIn: Date;
 
-  @Column()
-  timeOut: Date;
-
-  @ManyToOne(() => Bill, bill => bill.histories)
-  bill: Bill;
+  @Column({ nullable: true })
+  timeOut?: Date;
 
   @Column(
     {

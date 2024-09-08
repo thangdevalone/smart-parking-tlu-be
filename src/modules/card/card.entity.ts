@@ -12,7 +12,7 @@ export class Card extends BaseEntity {
   @Column({ unique: true })
   cardCode: string;
 
-  @Column()
+  @Column({ default: '' })
   licensePlate?: string;
 
   @Column({
@@ -23,13 +23,13 @@ export class Card extends BaseEntity {
   cardStatus: CardStatus;
 
   @ManyToOne(() => User, user => user.id)
-  user: User;
+  user?: User;
 
-  @ManyToOne(() => CardType, cardType => cardType.cards)
+  @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
 
-  @OneToMany(() => Bill, bill => bill.card)
-  bills: Bill[];
+  @OneToMany(() => Bill, bill => bill.id)
+  bills?: Bill[];
 
   @Column(
     {

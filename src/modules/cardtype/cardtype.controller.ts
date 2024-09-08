@@ -5,7 +5,7 @@ import { CardTypeService } from "./cardtype.service";
 import { AdminRequired } from "../user";
 import { CreateCradTypeDto, UpdateCardTypeDto } from "./cardtype.dto";
 import { Pagination } from "src/decorators";
-import { PaginationDto } from "src/types";
+import { DeleteMultipleDto, PaginationDto } from "src/types";
 
 @Controller('card-type')
 @ApiBearerAuth()
@@ -34,12 +34,12 @@ export class CardTypeController {
         return await this.cardTypeService.getCardTypes(pagination);
     }
 
-    @Delete(':idCardType')
+    @Delete('')
     @AdminRequired()
     public async deleteCardType(
-        @Param('idCardType') idCardType: string
+        @Body() deleteCardTypeDto : DeleteMultipleDto
     ) {
-        return await this.cardTypeService.deleteCardType(idCardType);
+        return await this.cardTypeService.deleteCardType(deleteCardTypeDto.ids);
     }
 
     @Patch(':idCardType')

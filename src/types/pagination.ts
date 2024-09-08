@@ -20,6 +20,6 @@ export class PaginationDto {
 
   @IsOptional()
   @IsString()
-  sortType?: 'asc' | 'desc';
+  sortType?: 'ASC' | 'DESC';
 
 }

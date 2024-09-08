@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity } from 'typeorm';
-import { Card } from '../card';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
 
 @Entity('cardtypes')
 export class CardType extends BaseEntity {
@@ -12,9 +11,6 @@ export class CardType extends BaseEntity {
   @Column()
   cardTypePrice: number;
 
-  @OneToMany(() => Card, card => card.cardType)
-  cards: Card[];
-  
   @Column(
     {
       type: 'timestamp',

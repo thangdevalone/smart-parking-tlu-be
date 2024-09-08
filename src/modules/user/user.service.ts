@@ -75,11 +75,8 @@ export class UserService extends BaseService<User, UserRepository> {
         return null;
     }
 
-    async deleteUser(id: string) {
-        const result = await this.repository.delete(id);
-        if (result.affected === 0) {
-            throw new Error('User not found');
-        }
+    async deleteUser(ids: number[]) {
+        await this.deleteMultiple(ids);
         return {
             message: 'User deleted successfully',
         };

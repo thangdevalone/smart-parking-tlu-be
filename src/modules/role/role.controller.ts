@@ -2,7 +2,7 @@ import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, Patch
 import { RoleService } from "./role.service";
 import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
 import { Pagination, ReqUser } from "src/decorators";
-import { PaginationDto, SystemRoles } from "src/types";
+import { DeleteMultipleDto, PaginationDto, SystemRoles } from "src/types";
 import { ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { AdminRequired } from "../user/decorators/permission.decorator";
 import { JwtAuthGuard } from "src/auth/guards";
@@ -38,12 +38,12 @@ export class RoleController {
         return this.roleService.getRoles(pagination);
     }
 
-    @Delete(':idRole')
+    @Delete('')
     @AdminRequired()
     public async deleteRole(
-        @Param('idRole') idRole: string,
+        @Body() deleteRoleDto: DeleteMultipleDto
     ) {
-        return await this.roleService.deleteRole(idRole);
+        return await this.roleService.deleteRole(deleteRoleDto.ids);
     }
 
     @Patch(':idRole')
