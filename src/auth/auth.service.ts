@@ -19,8 +19,8 @@ export class AuthService {
     ) { }
 
     async login(data: LoginDto) {
-        const { email, password } = data;
-        const user = await this.user.validateUser(email, password);
+        const { userCode, password } = data;
+        const user = await this.user.validateUser(userCode, password);
 
         if (!user) throw new Error(Messages.auth.wrongEmailPassword);
 

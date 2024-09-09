@@ -3,7 +3,6 @@ import { IBaseService } from './i.base.service'
 import { EntityId } from 'typeorm/repository/EntityId'
 import { LoggerService } from 'src/logger'
 import { PaginationDto } from 'src/types'
-import { getConnection } from 'typeorm';
 
 export class BaseService<T extends BaseEntity, R extends Repository<T>> implements IBaseService<T> {
   protected readonly repository: R
@@ -39,11 +38,15 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     return this.findById(id)
   }
 
-  async paginate(pagination: PaginationDto, filed?: string): Promise<{ paginate: T[], page: number, totalPages: number, totalItems: number, hasNext: boolean }> {
+  async paginate(pagination: PaginationDto, filed?: string, excludeName?: string, excludeValue?: string): Promise<{ paginate: T[], page: number, totalPages: number, totalItems: number, hasNext: boolean }> {
     const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
     const queryBuilder = this.repository.createQueryBuilder('entity');
     if (search.length > 0 && filed) {
       queryBuilder.orWhere(`entity.${filed} LIKE :search`, { search: `%${search}%` });
+    }
+
+    if (excludeName && excludeValue) {
+      queryBuilder.andWhere(`entity.${excludeName} != :excludeValue`, { excludeValue });
     }
 
     const [results, total] = await queryBuilder
@@ -63,15 +66,19 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
 
-  async deleteMultiple(ids: number[]): Promise<DeleteResult> {
-    const entityTarget = this.repository.target;
-    const res = await this.repository.createQueryBuilder()
-      .delete()
-      .from(entityTarget) 
-      .where('id IN (:...ids)', { ids })
-      .execute();
+  async deleteMultiple(ids: number[], entity: EntityTarget<T>): Promise<DeleteResult> {
+    try {
+      const deleteResult = await this.repository.createQueryBuilder()
+        .delete()
+        .from(entity)
+        .where('id IN (:...ids)', { ids })
+        .execute();
 
-    return res;
+      return deleteResult;
+    }
+    catch (e) {
+      throw new Error('Có bản ghi đang tham chiếu tới dữ liệu khác')
+    }
   }
 
 
@@ -80,5 +87,5 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
 
-  
+
 }

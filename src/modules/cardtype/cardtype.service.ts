@@ -7,6 +7,7 @@ import { Repository } from "typeorm";
 import { LoggerService } from "src/logger";
 import { CreateCradTypeDto, UpdateCardTypeDto } from "./cardtype.dto";
 import { PaginationDto } from "src/types";
+import { Card } from "../card/card.entity";
 
 @Injectable()
 export class CardTypeService extends BaseService<CardType, CardTypeRepository> {
@@ -40,9 +41,8 @@ export class CardTypeService extends BaseService<CardType, CardTypeRepository> {
         return this.paginate(pagination, 'cardTypeName');
     }
 
-    async deleteCardType(ids:number[]) {
-        await this.deleteMultiple(ids);
-
+    async deleteCardType(ids: number[]) {
+        const res = await this.deleteMultiple(ids,CardType);
         return {
             message: 'Card Type deleted successfully',
         };

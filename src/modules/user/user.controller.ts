@@ -45,13 +45,13 @@ export class UserController {
         return await this.userService.updateUser(id, updateUserDto);
     }
 
-    @Delete()
-    @AdminRequired()
-    async deleteUser(
-        @Body() deleteUserDto :DeleteMultipleDto
-    ) {
-        return await this.userService.deleteUser(deleteUserDto.ids);
-    }
+    // @Delete()
+    // @AdminRequired()
+    // async deleteUser(
+    //     @Body() deleteUserDto :DeleteMultipleDto
+    // ) {
+    //     return await this.userService.deleteUser(deleteUserDto.ids);
+    // }
 
 
 }

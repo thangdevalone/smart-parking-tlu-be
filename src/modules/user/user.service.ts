@@ -87,12 +87,13 @@ export class UserService extends BaseService<User, UserRepository> {
         return user;
     }
 
-    async validateUser(email: string, password: string) {
+    async validateUser(userCode: string, password: string) {
         const user = await this.repository.createQueryBuilder('user')
             .leftJoinAndSelect('user.role', 'role')
-            .where('user.email = :email', { email })
+            .where('user.userCode = :userCode', { userCode })
             .addSelect(['role.id', 'role.name'])
             .getOne();
+
 
         if (!user) return null;
         if (!user.password || user.password === '') throw new HttpException('USER_LOGIN_SSO', HttpStatus.FORBIDDEN);
@@ -105,10 +106,4 @@ export class UserService extends BaseService<User, UserRepository> {
         return null;
     }
 
-    async deleteUser(ids: number[]) {
-        await this.deleteMultiple(ids);
-        return {
-            message: 'User deleted successfully',
-        };
-    }
 }

@@ -38,12 +38,11 @@ export class RoleService extends BaseService<Role, RoleRepository> {
     }
 
     public async getRoles(pagination: PaginationDto) {
-        return this.paginate(pagination, 'name');
+        return this.paginate(pagination, 'name','name','admin');
     }
 
     public async deleteRole(ids: number[]) {
-        const result = await this.deleteMultiple(ids);
-       
+        const result = await this.deleteMultiple(ids,Role);
         return {
             message: 'Role deleted successfully',
         };

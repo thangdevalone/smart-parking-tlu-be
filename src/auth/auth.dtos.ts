@@ -4,12 +4,12 @@ import { Role } from "src/modules";
 
 export class LoginDto {
     @ApiProperty({
-        default: "example@gmail.com"
+        default: "A1111"
     })
-    @IsEmail({}, {
-        message: "INVALID_EMAIL"
+    @IsNotEmpty({
+        message: "USER_CODE_REQUIRED"
     })
-    email: string;
+    userCode: string;
 
     @ApiProperty({
         default: "P@ssword~sample1"
