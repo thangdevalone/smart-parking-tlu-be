@@ -38,6 +38,11 @@ export class RoleController {
         return this.roleService.getRoles(pagination);
     }
 
+    @Get('getAll')
+    public getAllRole() { 
+        return this.roleService.getAllRole();
+    }
+
     @Delete('')
     @AdminRequired()
     public async deleteRole(

@@ -67,4 +67,9 @@ export class RoleService extends BaseService<Role, RoleRepository> {
     public async getRoleUser() {
         return (await this.repository.findOne({ where: { name: Roles.USER } }));
     }
+
+    public async getAllRole() {
+        const roles = await this.repository.find();
+        return roles.map(role => ({value:role.name, id:role.id}));
+    }
 }
