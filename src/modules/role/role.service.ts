@@ -38,7 +38,7 @@ export class RoleService extends BaseService<Role, RoleRepository> {
     }
 
     public async getRoles(pagination: PaginationDto) {
-        return this.paginate(pagination, 'name','name','admin');
+        return this.paginate(pagination, 'name');
     }
 
     public async deleteRole(ids: number[]) {

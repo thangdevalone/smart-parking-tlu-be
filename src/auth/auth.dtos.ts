@@ -39,22 +39,6 @@ export class RegisterDto {
     email: string;
 
     @ApiProperty({
-        default: "P@ssword~sample1"
-    })
-    @IsNotEmpty({
-        message: "PASSWORD_REQUIRED"
-    })
-    password: string;
-
-    @ApiProperty({
-        default: "P@ssword~sample1"
-    })
-    @IsNotEmpty({
-        message: "PASSWORD_REQUIRED"
-    })
-    confirmPassword: string;
-
-    @ApiProperty({
         default: "A99999"
     })
     @IsNotEmpty({
@@ -64,7 +48,6 @@ export class RegisterDto {
 
     @IsOptional()
     role: number;
-
 }
 
 export class forgotPasswordDto {

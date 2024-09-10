@@ -19,11 +19,13 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
     }
 
     async createHistory(imageIn: string, billId: string) {
+
         const history = await this.store({
             imageIn,
             timeIn: new Date(),
-            bill: billId
+            bill: billId,
         });
+        
         if (!history) throw new NotFoundException(Messages.history.notCreated);
 
         return {

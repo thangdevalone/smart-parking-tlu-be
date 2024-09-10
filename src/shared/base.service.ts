@@ -77,7 +77,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
       return deleteResult;
     }
     catch (e) {
-      throw new Error('Có bản ghi đang tham chiếu tới dữ liệu khác')
+      throw new Error('Bản ghi đang tham chiếu tới dữ liệu khác')
     }
   }
 

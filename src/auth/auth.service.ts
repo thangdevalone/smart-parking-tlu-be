@@ -40,19 +40,27 @@ export class AuthService {
 
         if (user) throw new Error(Messages.auth.alreadyExists);
 
-        if (data.password !== data.confirmPassword) throw new Error(Messages.auth.passwordNotMatch);
-
         let role = data.role;
 
         role = role ?? (await this.role.getRoleUser()).id;
 
         if (!role) throw new Error(Messages.role.roleUserNotFound);
 
-        const passwordHash = hashSync(data.confirmPassword, 10);
+        const password = randomPassword(10);
 
-        delete data.confirmPassword;
+        const passwordHash = hashSync(password, 10);
 
         const newUser = await this.user.store({ ...data, password: passwordHash, role });
+
+        const html = `Tài khoản của bạn là ${data.userCode} \nMật khẩu của bạn là ${password}`;
+        const subject = 'Cấp lại mật khẩu';
+        const send = {
+            to: data.email,
+            html,
+            subject
+        };
+
+        this.email.sendMail(send);
 
         return {
             data: newUser,

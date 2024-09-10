@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Bill, BillService } from '../bill';
+import { BillService } from '../bill';
 import { HistoryService } from '../history';
 import { CardService } from '../card';
 import axios from 'axios';
@@ -26,21 +26,24 @@ export class TicketService {
 
         if(card.data.licensePlate !== "") throw new Error('Card is already checked in');
 
+        if (!Image || !Image.buffer) {
+            throw new Error('File upload failed or file buffer is undefined');
+        }
+
         const uploadsDir = resolve(`${__dirname.split('\\dist')[0]}`, 'uploads');
-        // Ensure the uploads directory exists
+
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }
-
         const imagePath = join(uploadsDir, `${Date.now()}_checkin_${Image.originalname}`);
         fs.writeFileSync(imagePath, Image.buffer);
 
-        const responsive = await axios.post(this.config.get('service.ai'), {
-            image: Image
-        });
+        // const responsive = await axios.post(this.config.get('service.ai'), {
+        //     image: Image
+        // });
 
-        const plate = responsive['text'] ?? '';
-        // const plate =  '12';
+        // const plate = responsive['text'] ?? '';
+        const plate =  '12';
 
         await this.cardService.updateCard(cardId, { licensePlate: plate });
 
@@ -57,17 +60,24 @@ export class TicketService {
         const history = await this.historyService.createHistory(imagePath, bill.id + '');
 
         return {
+            data: {
+                ...bill,
+            },
             message: 'Checkin successfully',
         };
 
     }
 
-    async checkout(cardId: string, Image: Express.Multer.File, Res: Response) {
+    async checkout(cardId: string, Image: Express.Multer.File) {
         const card = await this.cardService.getCardDetail(cardId);
 
         if (!card) throw new Error('Card not found');
 
         if(card.data.licensePlate === "") throw new Error('Card is not checked in');
+
+        if (!Image || !Image.buffer) {
+            throw new Error('File upload failed or file buffer is undefined');
+        }
 
         const uploadsDir = resolve(`${__dirname.split('\\dist')[0]}`, 'uploads');
         if (!fs.existsSync(uploadsDir)) {
@@ -80,8 +90,7 @@ export class TicketService {
         const bill = await this.billService.getDetail(card.data);
         if (!bill) throw new Error('Bill not found');
 
-        
-        await this.billService.updateBill(bill.id + '', { billStatus: BillStatus.PAID });
+        const newBill = await this.billService.updateBill(bill.id + '', { billStatus: BillStatus.PAID });
 
         const history = await this.historyService.findOne({ bill: bill.id, imageOut: null });
 
@@ -89,16 +98,16 @@ export class TicketService {
 
         await this.historyService.updateHistory(history.id + '', { imageOut: imagePath });
 
-        console.log(history.imageIn);
-
         if (!fs.existsSync(history.imageIn)) {
             throw new Error('Checkin image not found');
         }
-        Res.sendFile(history.imageIn);
 
         await this.cardService.updateCard(cardId, { licensePlate: "" });
 
         return {
+            data: {
+                ...newBill,
+            },
             message: 'Checkout successfully',
         };
     }
