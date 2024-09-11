@@ -58,7 +58,7 @@ export class CardService extends BaseService<Card, CardyRepository> {
     }
 
     async deleteCard(ids: number[]) {
-        const res = await this.deleteMultiple(ids,Card);
+        const res = await this.deleteMultiple(ids, Card);
         return {
             message: Messages.card.deleted,
         }

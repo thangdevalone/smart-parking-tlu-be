@@ -7,7 +7,6 @@ import { ConfigService } from '@nestjs/config';
 import { join ,resolve} from 'path';
 import * as fs from 'fs';
 import { BillStatus } from 'src/types';
-import { Response } from 'express';
 @Injectable()
 export class TicketService {
 
@@ -25,6 +24,15 @@ export class TicketService {
         if (!card) throw new Error('Card not found');
 
         if(card.data.licensePlate !== "") throw new Error('Card is already checked in');
+
+        let monthlyCard = false;
+
+        if (card.data.cardType.cardTypeName.includes('thang')) {
+            const now = new Date();
+            if (now > card.data.createdAt)
+                throw new Error('Card hết hạn');
+            monthlyCard = true;
+        }
 
         if (!Image || !Image.buffer) {
             throw new Error('File upload failed or file buffer is undefined');
@@ -46,15 +54,6 @@ export class TicketService {
         const plate =  '12';
 
         await this.cardService.updateCard(cardId, { licensePlate: plate });
-
-        let monthlyCard = false;
-
-        if (card.data.cardType.cardTypeName.includes('thang')) {
-            const now = new Date();
-            if (now > card.data.createdAt)
-                throw new Error('Card hết hạn');
-            monthlyCard = true;
-        }
 
         const bill = await this.billService.createBill(cardId, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
         const history = await this.historyService.createHistory(imagePath, bill.id + '');

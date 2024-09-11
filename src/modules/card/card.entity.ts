@@ -25,6 +25,9 @@ export class Card extends BaseEntity {
   @ManyToOne(() => User, user => user.id)
   user?: User;
 
+  // quản lý thẻ tháng
+
+
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
 

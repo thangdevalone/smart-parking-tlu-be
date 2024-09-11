@@ -7,6 +7,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { LoggerService } from "src/logger";
 import { UpdateHistoryDto } from "./history.dto";
 import { Messages } from "src/config";
+import { PaginationDto } from "src/types";
 
 @Injectable()
 export class HistoryService extends BaseService<History, HistoryRepository> {
@@ -18,6 +19,30 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
         super(repository, logger);
     }
 
+    async getHistories(pagination: PaginationDto) {
+        const { limit = 10, page = 1, sortBy = 'timeIn', sortType = 'DESC', search = '' } = pagination;
+        const queryBuilder = this.repository.createQueryBuilder('entity');
+        if (search.length > 0) {
+            queryBuilder.orWhere(`entity.fullName LIKE :search`, { search: `%${search}%` });
+        }
+
+        const [results, total] = await queryBuilder
+            .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+            .leftJoinAndSelect('entity.bill', 'bill')
+            .offset((page - 1) * limit)
+            .limit(limit)
+            .getManyAndCount();
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            paginate: results,
+            page: page,
+            totalPages,
+            hasNext: page >= totalPages ? false : true,
+            totalItems: total,
+        };
+    }
+
     async createHistory(imageIn: string, billId: string) {
 
         const history = await this.store({
@@ -25,7 +50,7 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
             timeIn: new Date(),
             bill: billId,
         });
-        
+
         if (!history) throw new NotFoundException(Messages.history.notCreated);
 
         return {

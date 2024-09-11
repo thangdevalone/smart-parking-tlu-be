@@ -46,6 +46,15 @@ export class RegisterDto {
     })
     userCode: string;
 
+    @ApiProperty({
+        default: "P@ssword~sample1"
+    })
+    @IsNotEmpty({
+        message: "PHONE_REQUIRED"
+    })
+    @IsOptional()
+    phone?: string;
+
     @IsOptional()
     role: number;
 }
@@ -83,6 +92,32 @@ export class ResetPasswordDto {
         message: "PASSWORD_REQUIRED"
     })
     confirmPassword: string;
+}
+
+export class ChangePasswordDto {
+    @ApiProperty({
+        default: "P@ssword~sample1"
+    })
+    @IsNotEmpty({
+        message: "PASSWORD_REQUIRED"
+    })
+    password: string;
+
+    @ApiProperty({
+        default: "P@ssword~sample1"
+    })
+    @IsNotEmpty({
+        message: "PASSWORD_REQUIRED"
+    })
+    passwordNew: string;
+
+    @ApiProperty({
+        default: "P@ssword~sample1"
+    })
+    @IsNotEmpty({
+        message: "PASSWORD_REQUIRED"
+    })
+    passwordConfirm: string;
 }
 
 export interface JwtPayload {

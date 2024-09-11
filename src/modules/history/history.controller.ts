@@ -24,7 +24,7 @@ export class HistoryController {
     async getAll(
         @Pagination() pagination: PaginationDto
     ) {
-        return await this.historyService.paginate(pagination);
+        return await this.historyService.getHistories(pagination);
     }
 
     @Get(':id')
