@@ -39,7 +39,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
   }
 
   async paginate(pagination: PaginationDto, filed?: string, excludeName?: string, excludeValue?: string): Promise<{ paginate: T[], page: number, totalPages: number, totalItems: number, hasNext: boolean }> {
-    const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
+    const { limit = 10, page = 1, sortBy = 'createdAt', sortType = 'ASC', search = '' } = pagination;
     const queryBuilder = this.repository.createQueryBuilder('entity');
     if (search.length > 0 && filed) {
       queryBuilder.orWhere(`entity.${filed} LIKE :search`, { search: `%${search}%` });
