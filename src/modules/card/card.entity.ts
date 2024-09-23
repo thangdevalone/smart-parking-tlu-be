@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity } from 'typeorm';
 import { User } from '../user';
 import { CardType } from '../cardtype';
-import { Bill } from '../bill';
 import { CardStatus } from 'src/types';
 
 @Entity('cards')
@@ -26,7 +25,6 @@ export class Card extends BaseEntity {
   user?: User;
 
   // quản lý thẻ tháng
-
 
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;

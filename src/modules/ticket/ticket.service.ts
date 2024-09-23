@@ -46,12 +46,11 @@ export class TicketService {
         const imagePath = join(uploadsDir, `${Date.now()}_checkin_${Image.originalname}`);
         fs.writeFileSync(imagePath, Image.buffer);
 
-        // const responsive = await axios.post(this.config.get('service.ai'), {
-        //     image: Image
-        // });
+        const responsive = await axios.post(this.config.get('service.ai'), {
+            image: Image
+        });
 
-        // const plate = responsive['text'] ?? '';
-        const plate =  '12';
+        const plate = responsive['text'] ?? '';
 
         await this.cardService.updateCard(cardId, { licensePlate: plate });
 

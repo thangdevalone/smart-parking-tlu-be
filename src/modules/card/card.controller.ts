@@ -42,7 +42,7 @@ export class CardController {
         return await this.card.createCard(createCradDto)
     }
 
-    @Patch('idCard')
+    @Patch(':idCard')
     @AdminRequired()
     public async updateCard(
         @Param('idCard') idCard: string,

@@ -23,7 +23,38 @@ export class CardService extends BaseService<Card, CardyRepository> {
 
 
     async getCards(pagination: PaginationDto) {
-        return await this.paginate(pagination, 'cardCode')
+        const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
+        const queryBuilder = this.repository.createQueryBuilder('entity');
+
+        if (search.length > 0) {
+            queryBuilder.orWhere('card.cardCode LIKE :search', { search: `%${search}%` })
+                .orWhere('card.licensePlate LIKE :search', { search: `%${search}%` });
+        }
+        queryBuilder.select([
+            'entity.id',
+            'entity.cardCode',
+            'entity.licensePlate',
+            'entity.cardStatus',
+            'entity.createdAt',
+            'entity.updatedAt',
+        ]);
+
+        const [results, total] = await queryBuilder
+            .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+            .leftJoinAndSelect('entity.cardType', 'cardType')
+            .offset((page - 1) * limit)
+            .limit(limit)
+            .getManyAndCount();
+        const totalPages = Math.ceil(total / limit);
+
+
+        return {
+            paginate: results,
+            page: page,
+            totalPages,
+            hasNext: page >= totalPages ? false : true,
+            totalItems: total,
+        };
     }
 
     async getCardDetail(idCard: string) {
@@ -69,7 +100,11 @@ export class CardService extends BaseService<Card, CardyRepository> {
 
         if (!card) throw new NotFoundException(Messages.card.notFound)
 
-        Object.assign(card, updateCardDto);
+        const filedUpdate = ['cardCode', 'cardType', 'cardStatus', 'licensePlate', 'user'];
+
+        filedUpdate.forEach(field => {
+            if (updateCardDto[field]) card[field] = updateCardDto[field];
+        });
 
         await this.repository.save(card);
 

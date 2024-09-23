@@ -8,15 +8,22 @@ export class CreateCardDto {
     cardCode: string
 
     @ApiProperty({ type: Number })
-    @IsNumber({}, { message: "INVALID_NUMBER" })
+    @IsNumber({}, { message: "INVALID_NUMBER123" })
     cardType: number
 }
 
 export class UpdateCardDto {
     @IsOptional()
+    @IsString({ message: "INVALID_STRING" })
+    cardCode?: string
+
+    @IsOptional()
+    @IsNumber({}, { message: "INVALID_NUMBER" })
+    cardType?: number
+
+    @IsOptional()
     @IsEnum(CardStatus)
     cardStatus?: CardStatus;
-
 
     @IsOptional()
     @IsString()
