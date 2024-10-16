@@ -15,7 +15,7 @@ export const Messages = {
     notCreated: 'Không thể tạo người dùng',
     passwordNotMatch: 'Mật khẩu không khớp',
     loginSuccess: 'Đăng nhập thành công',
-    wrongEmailPassword: 'Sai email hoặc mật khẩu',
+    wrongEmailPassword: 'Sai mã người dùng hoặc mật khẩu',
     unauthorized: 'Không được phép',
     passwordChanged: 'Đổi mật khẩu thành công',
     passwordReset: 'Đặt lại mật khẩu thành công',

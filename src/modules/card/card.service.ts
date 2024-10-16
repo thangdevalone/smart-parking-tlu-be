@@ -12,105 +12,107 @@ import { CardTypeService } from "../cardtype";
 
 @Injectable()
 export class CardService extends BaseService<Card, CardyRepository> {
-    constructor(
-        @InjectRepository(Card)
-        protected readonly repository: Repository<Card>,
-        protected readonly logger: LoggerService,
-        private readonly cardTypeService: CardTypeService
-    ) {
-        super(repository, logger);
+  constructor(
+    @InjectRepository(Card)
+    protected readonly repository: Repository<Card>,
+    protected readonly logger: LoggerService,
+    private readonly cardTypeService: CardTypeService
+  ) {
+    super(repository, logger);
+  }
+
+
+  async getCards(pagination: PaginationDto) {
+    const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
+    const queryBuilder = this.repository.createQueryBuilder("entity");
+
+    if (search.length > 0) {
+      queryBuilder.orWhere("card.cardCode LIKE :search", { search: `%${search}%` })
+        .orWhere("card.licensePlate LIKE :search", { search: `%${search}%` });
     }
+    queryBuilder.select([
+      "entity.id",
+      "entity.cardCode",
+      "entity.licensePlate",
+      "entity.cardStatus",
+      "entity.createdAt",
+      "entity.updatedAt"
+    ]);
+
+    const [results, total] = await queryBuilder
+      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+      .leftJoinAndSelect("entity.cardType", "cardType")
+      .offset((page - 1) * limit)
+      .limit(limit)
+      .getManyAndCount();
+    const totalPages = Math.ceil(total / limit);
 
 
-    async getCards(pagination: PaginationDto) {
-        const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
-        const queryBuilder = this.repository.createQueryBuilder('entity');
+    return {
+      paginate: results,
+      page: page,
+      totalPages,
+      hasNext: page >= totalPages ? false : true,
+      totalItems: total
+    };
+  }
 
-        if (search.length > 0) {
-            queryBuilder.orWhere('card.cardCode LIKE :search', { search: `%${search}%` })
-                .orWhere('card.licensePlate LIKE :search', { search: `%${search}%` });
-        }
-        queryBuilder.select([
-            'entity.id',
-            'entity.cardCode',
-            'entity.licensePlate',
-            'entity.cardStatus',
-            'entity.createdAt',
-            'entity.updatedAt',
-        ]);
+  async getCardDetail(idCard: string) {
+    const card = await this.repository.createQueryBuilder("card")
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .where("card.id = :id", { id: +idCard })
+      .getOne();
 
-        const [results, total] = await queryBuilder
-            .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
-            .leftJoinAndSelect('entity.cardType', 'cardType')
-            .offset((page - 1) * limit)
-            .limit(limit)
-            .getManyAndCount();
-        const totalPages = Math.ceil(total / limit);
+    if (!card) throw new NotFoundException(Messages.card.notFound);
 
+    return {
+      data: card
+    };
+  }
 
-        return {
-            paginate: results,
-            page: page,
-            totalPages,
-            hasNext: page >= totalPages ? false : true,
-            totalItems: total,
-        };
-    }
+  async createCard(createCardDto: CreateCardDto) {
+    const card = await this.index({ cardCode: createCardDto.cardCode });
 
-    async getCardDetail(idCard: string) {
-        const card = await this.repository.createQueryBuilder('card')
-            .leftJoinAndSelect('card.cardType', 'cardType')
-            .where('card.id = :id', { id: +idCard })
-            .getOne()
+    if (card.length > 0) throw new Error(Messages.card.alreadyExists);
 
-        if (!card) throw new NotFoundException(Messages.card.notFound)
+    const cardType = await this.cardTypeService.index({ id: createCardDto.cardType });
 
-        return {
-            data: card
-        }
-    }
+    if (!cardType) throw new NotFoundException(Messages.cardType.notFound);
 
-    async createCard(createCardDto: CreateCardDto) {
-        const card = await this.index({ cardCode: createCardDto.cardCode })
+    const newDate = new Date();
+    const exp = `${newDate.getMonth() + 1}/${newDate.getFullYear()}`;
+    const newCard = await this.store({ ...createCardDto, cardStatus: CardStatus.ACTIVE, expiration: exp });
 
-        if (card.length > 0) throw new Error(Messages.card.alreadyExists)
+    return {
+      data: newCard,
+      message: Messages.card.created
+    };
 
-        const cardType = await this.cardTypeService.index({ id: createCardDto.cardType })
+  }
 
-        if (!cardType) throw new NotFoundException(Messages.cardType.notFound)
+  async deleteCard(ids: number[]) {
+    const res = await this.deleteMultiple(ids, Card);
+    return {
+      message: Messages.card.deleted
+    };
+  }
 
-        const newCard = await this.store({ ...createCardDto, cardStatus: CardStatus.ACTIVE })
+  async updateCard(idCard: string, updateCardDto: UpdateCardDto) {
+    const card = await this.repository.findOne({ where: { id: +idCard } });
 
-        return {
-            data: newCard,
-            message: Messages.card.created
-        }
+    if (!card) throw new NotFoundException(Messages.card.notFound);
 
-    }
+    const filedUpdate = ["cardCode", "cardType", "cardStatus", "licensePlate", "user"];
 
-    async deleteCard(ids: number[]) {
-        const res = await this.deleteMultiple(ids, Card);
-        return {
-            message: Messages.card.deleted,
-        }
-    }
+    filedUpdate.forEach(field => {
+      if (updateCardDto[field]) card[field] = updateCardDto[field];
+    });
 
-    async updateCard(idCard: string, updateCardDto: UpdateCardDto) {
-        const card = await this.repository.findOne({ where: { id: +idCard } })
+    await this.repository.save(card);
 
-        if (!card) throw new NotFoundException(Messages.card.notFound)
-
-        const filedUpdate = ['cardCode', 'cardType', 'cardStatus', 'licensePlate', 'user'];
-
-        filedUpdate.forEach(field => {
-            if (updateCardDto[field]) card[field] = updateCardDto[field];
-        });
-
-        await this.repository.save(card);
-
-        return {
-            data: card,
-            message: Messages.card.cardUpodated
-        }
-    }
+    return {
+      data: card,
+      message: Messages.card.cardUpodated
+    };
+  }
 }

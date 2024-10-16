@@ -1,0 +1,12 @@
+các tài khoản VNPAY https://sandbox.vnpayment.vn/apis/vnpay-demo/
+
+Ngân hàng	NCB
+Số thẻ	9704198526191432198
+NGUYEN VAN A
+07/15
+Mật khẩu OTP	123456
+
+
+https://sandbox.vnpayment.vn/merchantv2/
+haidang02032003@gmail.com
+Haidang2003x@

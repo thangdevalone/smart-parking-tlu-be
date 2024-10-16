@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity } from 'typeorm';
 import { Card } from '../card';
-import { History } from '../history';
 import { BillStatus } from 'src/types';
 
 @Entity('bills')

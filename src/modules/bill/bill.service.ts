@@ -11,50 +11,50 @@ import { Card } from "../card";
 
 @Injectable()
 export class BillService extends BaseService<Bill, BillRepository> {
-    constructor(
-        @InjectRepository(Bill)
-        protected readonly billRepository: BillRepository,
-        protected readonly logger: LoggerService,
-    ) {
-        super(billRepository, logger);
-    }
+  constructor(
+    @InjectRepository(Bill)
+    protected readonly billRepository: BillRepository,
+    protected readonly logger: LoggerService
+  ) {
+    super(billRepository, logger);
+  }
 
+  async createBill(cardId: string, price: number) {
+    const bill = await this.store({
+      card: cardId,
+      price,
+      billStatus: BillStatus.UNPAID,
+      startDate: new Date()
+    });
 
-    async createBill(cardId: string, price: number) {
-        const bill = await this.store({
-            card: cardId,
-            price,
-            billStatus: BillStatus.UNPAID,
-            startDate: new Date(),
-        })
+    if (!bill) throw new NotFoundException(Messages.bill.notFound);
+    return bill;
+  }
 
-        if (!bill) throw new NotFoundException(Messages.bill.notFound);
-        return bill;
-    }
+  async updateBill(id: string, updateBillDeto: UpdateBillDto) {
+    const bill = await this.findOne({ id });
+    if (!bill) throw new NotFoundException(Messages.bill.notFound);
 
-    async updateBill(id: string, updateBillDeto: UpdateBillDto) {
-        const bill = await this.findOne({ id });
-        if (!bill) throw new NotFoundException(Messages.bill.notFound);
+    bill.billStatus = updateBillDeto.billStatus;
+    bill.endDate = new Date();
 
-        bill.billStatus = updateBillDeto.billStatus;
-        bill.endDate = new Date();
+    await this.repository.save(bill);
 
-        await this.repository.save(bill);
+    return {
+      data: bill,
+      message: Messages.bill.billUpdated
+    };
+  }
 
-        return {
-            data: bill,
-            message: Messages.bill.billUpdated,
-        }
-    }
+  async getDetail(card: Card) {
+    const bill = await this.repository.findOne({
+      where: {
+        card: card,
+        billStatus: BillStatus.UNPAID
+      }
+    });
+    if (!bill) throw new NotFoundException(Messages.bill.notFound);
+    return bill;
+  }
 
-    async getDetail(card: Card) {
-        const bill = await this.repository.findOne({
-            where: {
-                card: card,  
-                billStatus: BillStatus.UNPAID
-            }
-        });
-        if (!bill) throw new NotFoundException(Messages.bill.notFound);
-        return bill;
-    }
 }
