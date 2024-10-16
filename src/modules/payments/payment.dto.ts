@@ -1,21 +1,27 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreatePaymentDTO {
   @IsNumber()
-  @IsNotEmpty({ message: 'Amount is required and must be a number.' })
+  @IsNotEmpty({ message: "Amount is required and must be a number." })
   amount: number;
 
   @IsString()
-  @IsNotEmpty({ message: 'Order is required and must be a string.' })
+  @IsNotEmpty({ message: "Order is required and must be a string." })
   order: string;
 
   @IsOptional()
-  @IsString({ message: 'Language must be a string.' })
+  @IsString({ message: "Language must be a string." })
   language?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Bank code is required and must be a string.' })
+  @IsNotEmpty({ message: "Bank code is required and must be a string." })
   bankCode: string;
+}
+
+export class CreatePaymentZLPDTO {
+  @IsNumber()
+  @IsNotEmpty({ message: "Amount is required and must be a number." })
+  amount: number;
 }
 
 export class PaymentInfoQueryDto {

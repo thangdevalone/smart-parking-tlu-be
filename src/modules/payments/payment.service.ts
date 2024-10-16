@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Request, Response } from "express";
-import { CreatePaymentDTO, PaymentInfoQueryDto, PaymentStatus } from "./payment.dto";
+import { CreatePaymentDTO, CreatePaymentZLPDTO, PaymentInfoQueryDto, PaymentStatus } from "./payment.dto";
 import moment from "moment";
 import { ConfigService } from "@nestjs/config";
 import * as querystring from "qs";
@@ -16,6 +16,8 @@ import { Card } from "../card";
 import { BillStatus, CardStatus } from "../../types";
 import { CardTypeRepository } from "../cardtype/cardtype.repository";
 import { CardType } from "../cardtype";
+import CryptoJS from "crypto-js";
+import axios from "axios";
 
 @Injectable()
 export class PaymentService {
@@ -28,23 +30,12 @@ export class PaymentService {
     private readonly config: ConfigService) {
   }
 
+  // VNPAY
   async createPaymentVNP(createPaymentDTO: CreatePaymentDTO, req: Request, user: number) {
 
     const userEntity = await this.userRepository.findOne({ where: { id: user } });
-    const card = await this.cardRepository.findOne({ where: { user: userEntity } });
-
-    if (card) {
-      const expCard = card.expiration.split("-");
-      const dateCard = expCard[expCard.length - 1];
-      const [monthCard, yearCard] = dateCard.split("/");
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1; // Tháng trong JavaScript tính từ 0
-      const currentYear = currentDate.getFullYear();
-
-      if (parseInt(monthCard, 10) === currentMonth && parseInt(yearCard, 10) === currentYear) {
-        throw new NotFoundException("Bạn đã gia hạn tháng này!");
-      }
-    }
+    const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
+    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
 
     const tz = "Asia/Ho_Chi_Minh";
     const date = new Date();
@@ -89,20 +80,7 @@ export class PaymentService {
 
     vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
 
-
-    const payment = this.paymentRepository.create({
-      createdAt: new Date(),
-      updatedAt: null,
-      amount,
-      bankCode: bankCode || "",
-      orderInfo: `Thanh toan cho ma GD: ${orderId}`,
-      payDate: new Date().toISOString(),
-      txnRef: orderId,
-      status: PaymentStatus.PENDING,
-      user: userEntity
-    });
-
-    await this.paymentRepository.save(payment);
+    const payment = await this.createPayment(userEntity, amount, orderId, bankCode);
 
     if (payment) {
       return vnpUrl;
@@ -167,6 +145,125 @@ export class PaymentService {
     }
   }
 
+  // ZALOPAY
+  async createPaymentZLP(createPaymentZLPDTO: CreatePaymentZLPDTO, user: number) {
+
+    const userEntity = await this.userRepository.findOne({ where: { id: user } });
+    const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
+    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
+
+    const embed_data = {
+      redirecturl: "http://localhost:5173/admin/payment/pay?statusPayment=01"
+    };
+    const date = new Date();
+    let createDate = moment(date).format("YYYYMMDDHHmmss");
+    const items = [];
+    const transID = moment(date).format("DDHHmmss");
+
+    let order: any = {
+      app_id: this.config.get("payment.zlp.app_id"),
+      app_trans_id: transID,
+      app_user: "user123",
+      app_time: Date.now(),
+      item: JSON.stringify(items),
+      embed_data: JSON.stringify(embed_data),
+      amount: 50000,
+      callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
+      description: `Payment for the order #${transID}`,
+      bank_code: ""
+    };
+
+    const data =
+      this.config.get("payment.zlp.app_id") +
+      "|" +
+      order.app_trans_id +
+      "|" +
+      order.app_user +
+      "|" +
+      order.amount +
+      "|" +
+      order.app_time +
+      "|" +
+      order.embed_data +
+      "|" +
+      order.item;
+    order.mac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key1")).toString();
+
+    const result = await axios.post(this.config.get("payment.zlp.endpoint"), null, { params: order });
+
+    if (result.data.sub_return_code <= -400) {
+      throw new NotFoundException("Lỗi hệ thống");
+    }
+
+    const payment = await this.createPayment(userEntity, createPaymentZLPDTO.amount, transID);
+
+    if (!payment) {
+      throw new NotFoundException("Lỗi hệ thống");
+    }
+
+    return {
+      data: result.data
+    };
+
+
+  }
+
+  async callbackZLP(data: string, mac: string, res: Response) {
+    let hashMac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key2")).toString();
+    if (mac === hashMac) {
+      // thanh toan thanh cong
+      let dataJson = JSON.parse(data, this.config.get("payment.zlp.key2"));
+      console.log("dataJson", dataJson);
+    } else {
+      return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+    }
+
+  }
+
+  // MOMO
+  async createPaymentMM() {
+  }
+
+
+  // private function
+
+  private async handleValidate(user: User) {
+    const card = await this.cardRepository.findOne({ where: { user: user } });
+
+    if (card) {
+      const expCard = card.expiration.split("-");
+      const dateCard = expCard[expCard.length - 1];
+      const [monthCard, yearCard] = dateCard.split("/");
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+
+      if (parseInt(monthCard, 10) === currentMonth && parseInt(yearCard, 10) === currentYear) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private async createPayment(userEntity: User, amount: number, orderId: string, bankCode?: string) {
+    const payment = this.paymentRepository.create({
+      createdAt: new Date(),
+      updatedAt: null,
+      amount,
+      bankCode: bankCode || "",
+      orderInfo: `Thanh toan cho ma GD: ${orderId}`,
+      payDate: new Date().toISOString(),
+      txnRef: orderId,
+      status: PaymentStatus.PENDING,
+      user: userEntity
+    });
+
+    await this.paymentRepository.save(payment);
+
+    return payment;
+
+
+  }
 
   private sortObject(data: any) {
     let sorted = {};
