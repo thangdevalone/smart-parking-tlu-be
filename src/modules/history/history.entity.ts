@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, BaseEntity } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Bill } from '../bill';
 
 @Entity('histories')
@@ -24,8 +24,8 @@ export class History extends BaseEntity {
   @Column(
     {
       type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-    },
+      default: () => 'CURRENT_TIMESTAMP'
+    }
   )
   createdAt: Date;
 
@@ -33,8 +33,8 @@ export class History extends BaseEntity {
     {
       type: 'timestamp',
       default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP',
-    },
+      onUpdate: 'CURRENT_TIMESTAMP'
+    }
   )
   updatedAt: Date;
 }

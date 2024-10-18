@@ -1,4 +1,4 @@
 export enum CardStatus {
-    ACTIVE = 'active',
-    INACTIVE = 'inactive',
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
 }

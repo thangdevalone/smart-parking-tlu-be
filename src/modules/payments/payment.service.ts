@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { Request, Response } from "express";
-import { CreatePaymentDTO, CreatePaymentZLPDTO, PaymentInfoQueryDto, PaymentStatus } from "./payment.dto";
-import moment from "moment";
-import { ConfigService } from "@nestjs/config";
-import * as querystring from "qs";
-import * as crypto from "node:crypto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Payment } from "./payment.entity";
-import { PaymentRepository } from "./payment.repository";
-import { BillRepository } from "../bill/bill.repository";
-import { CardyRepository } from "../card/card.repository";
-import { User, UserRepository } from "../user";
-import { Bill } from "../bill";
-import { Card } from "../card";
-import { BillStatus, CardStatus } from "../../types";
-import { CardTypeRepository } from "../cardtype/cardtype.repository";
-import { CardType } from "../cardtype";
-import CryptoJS from "crypto-js";
-import axios from "axios";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { CreatePaymentDTO, CreatePaymentZLPDTO, PaymentInfoQueryDto, PaymentStatus } from './payment.dto';
+import moment from 'moment';
+import { ConfigService } from '@nestjs/config';
+import * as querystring from 'qs';
+import * as crypto from 'node:crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Payment } from './payment.entity';
+import { PaymentRepository } from './payment.repository';
+import { BillRepository } from '../bill/bill.repository';
+import { CardyRepository } from '../card/card.repository';
+import { User, UserRepository } from '../user';
+import { Bill } from '../bill';
+import { Card } from '../card';
+import { BillStatus, CardStatus } from '../../types';
+import { CardTypeRepository } from '../cardtype/cardtype.repository';
+import { CardType } from '../cardtype';
+import CryptoJS from 'crypto-js';
+import axios from 'axios';
 
 @Injectable()
 export class PaymentService {
@@ -35,57 +35,57 @@ export class PaymentService {
 
     const userEntity = await this.userRepository.findOne({ where: { id: user } });
     const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
-    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
+    if (isValidate) throw new NotFoundException('Bạn đã gia hạn tháng này!');
 
-    const tz = "Asia/Ho_Chi_Minh";
+    const tz = 'Asia/Ho_Chi_Minh';
     const date = new Date();
-    let createDate = moment(date).format("YYYYMMDDHHmmss");
+    let createDate = moment(date).format('YYYYMMDDHHmmss');
 
-    let ipAddr = req.headers["x-forwarded-for"] || "192.168.1.1";
+    let ipAddr = req.headers['x-forwarded-for'] || '192.168.1.1';
 
-    const tmnCode = this.config.get("payment.vnp.tmnCode");
-    const secretKey = this.config.get("payment.vnp.hashSecret");
-    let vnpUrl = this.config.get("payment.vnp.url");
-    const returnUrl = this.config.get("payment.vnp.returnUrl");
+    const tmnCode = this.config.get('payment.vnp.tmnCode');
+    const secretKey = this.config.get('payment.vnp.hashSecret');
+    let vnpUrl = this.config.get('payment.vnp.url');
+    const returnUrl = this.config.get('payment.vnp.returnUrl');
 
-    let orderId = moment(date).format("DDHHmmss");
+    let orderId = moment(date).format('DDHHmmss');
 
     const { amount, language, bankCode, order } = createPaymentDTO;
 
-    const locale = language || "vn";
+    const locale = language || 'vn';
 
-    const currCode = "VND";
+    const currCode = 'VND';
 
     let vnp_Params: any = {
-      vnp_Version: "2.1.0",
-      vnp_Command: "pay",
+      vnp_Version: '2.1.0',
+      vnp_Command: 'pay',
       vnp_TmnCode: tmnCode,
       vnp_Locale: locale,
       vnp_CurrCode: currCode,
       vnp_TxnRef: orderId,
       vnp_OrderInfo: `Thanh toan cho ma GD: ${orderId}`,
-      vnp_OrderType: "other",
+      vnp_OrderType: 'other',
       vnp_Amount: amount * 100,
-      vnp_ReturnUrl: returnUrl || "http://localhost:8080/payment/info",
+      vnp_ReturnUrl: returnUrl || 'http://localhost:8080/payment/info',
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: createDate
     };
-    if (bankCode !== null && bankCode !== "") vnp_Params["vnp_BankCode"] = bankCode;
+    if (bankCode !== null && bankCode !== '') vnp_Params['vnp_BankCode'] = bankCode;
 
     vnp_Params = this.sortObject(vnp_Params);
 
     const signData = querystring.stringify(vnp_Params, { encode: false });
-    const hmac = crypto.createHmac("sha512", secretKey);
-    vnp_Params["vnp_SecureHash"] = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+    const hmac = crypto.createHmac('sha512', secretKey);
+    vnp_Params['vnp_SecureHash'] = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-    vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
+    vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
     const payment = await this.createPayment(userEntity, amount, orderId, bankCode);
 
     if (payment) {
       return vnpUrl;
     }
-    throw new Error("Lỗi hệ thống");
+    throw new Error('Lỗi hệ thống');
 
   }
 
@@ -98,8 +98,8 @@ export class PaymentService {
       vnp_TransactionNo
     } = queryDTO;
 
-    if (vnp_ResponseCode === "00") {
-      const payment = await this.paymentRepository.findOne({ where: { txnRef: vnp_TxnRef }, relations: ["user"] });
+    if (vnp_ResponseCode === '00') {
+      const payment = await this.paymentRepository.findOne({ where: { txnRef: vnp_TxnRef }, relations: ['user'] });
       if (payment) {
         const card = await this.cardRepository.findOne({ where: { user: payment.user } });
         if (card) {
@@ -114,7 +114,7 @@ export class PaymentService {
           });
           await this.billRepository.save(bill);
         } else {
-          const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: "vethang" } });
+          const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: 'vethang' } });
           const card = await this.cardRepository.findOne({ where: { cardType, user: null } });
           if (card && card.cardStatus === CardStatus.ACTIVE) {
             const newDate = new Date();
@@ -129,7 +129,7 @@ export class PaymentService {
             });
             await this.billRepository.save(bill);
           } else {
-            return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+            return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
           }
         }
         payment.status = PaymentStatus.COMPLETED;
@@ -138,10 +138,10 @@ export class PaymentService {
         payment.cardType = vnp_CardType;
         payment.transactionNo = vnp_TransactionNo;
         await this.paymentRepository.save(payment);
-        return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=00");
+        return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=00');
       }
     } else {
-      return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+      return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
     }
   }
 
@@ -150,55 +150,55 @@ export class PaymentService {
 
     const userEntity = await this.userRepository.findOne({ where: { id: user } });
     const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
-    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
+    if (isValidate) throw new NotFoundException('Bạn đã gia hạn tháng này!');
 
     const embed_data = {
-      redirecturl: "http://localhost:5173/admin/payment/pay?statusPayment=01"
+      redirecturl: 'http://localhost:5173/admin/payment/pay?statusPayment=01'
     };
     const date = new Date();
-    let createDate = moment(date).format("YYYYMMDDHHmmss");
+    let createDate = moment(date).format('YYYYMMDDHHmmss');
     const items = [];
-    const transID = moment(date).format("DDHHmmss");
+    const transID = moment(date).format('DDHHmmss');
 
     let order: any = {
-      app_id: this.config.get("payment.zlp.app_id"),
+      app_id: this.config.get('payment.zlp.app_id'),
       app_trans_id: transID,
-      app_user: "user123",
+      app_user: 'user123',
       app_time: Date.now(),
       item: JSON.stringify(items),
       embed_data: JSON.stringify(embed_data),
       amount: 50000,
-      callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
+      callback_url: 'https://b074-1-53-37-194.ngrok-free.app/callback',
       description: `Payment for the order #${transID}`,
-      bank_code: ""
+      bank_code: ''
     };
 
     const data =
-      this.config.get("payment.zlp.app_id") +
-      "|" +
+      this.config.get('payment.zlp.app_id') +
+      '|' +
       order.app_trans_id +
-      "|" +
+      '|' +
       order.app_user +
-      "|" +
+      '|' +
       order.amount +
-      "|" +
+      '|' +
       order.app_time +
-      "|" +
+      '|' +
       order.embed_data +
-      "|" +
+      '|' +
       order.item;
-    order.mac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key1")).toString();
+    order.mac = CryptoJS.HmacSHA256(data, this.config.get('payment.zlp.key1')).toString();
 
-    const result = await axios.post(this.config.get("payment.zlp.endpoint"), null, { params: order });
+    const result = await axios.post(this.config.get('payment.zlp.endpoint'), null, { params: order });
 
     if (result.data.sub_return_code <= -400) {
-      throw new NotFoundException("Lỗi hệ thống");
+      throw new NotFoundException('Lỗi hệ thống');
     }
 
     const payment = await this.createPayment(userEntity, createPaymentZLPDTO.amount, transID);
 
     if (!payment) {
-      throw new NotFoundException("Lỗi hệ thống");
+      throw new NotFoundException('Lỗi hệ thống');
     }
 
     return {
@@ -209,13 +209,13 @@ export class PaymentService {
   }
 
   async callbackZLP(data: string, mac: string, res: Response) {
-    let hashMac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key2")).toString();
+    let hashMac = CryptoJS.HmacSHA256(data, this.config.get('payment.zlp.key2')).toString();
     if (mac === hashMac) {
       // thanh toan thanh cong
-      let dataJson = JSON.parse(data, this.config.get("payment.zlp.key2"));
-      console.log("dataJson", dataJson);
+      let dataJson = JSON.parse(data, this.config.get('payment.zlp.key2'));
+      console.log('dataJson', dataJson);
     } else {
-      return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+      return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
     }
 
   }
@@ -231,9 +231,9 @@ export class PaymentService {
     const card = await this.cardRepository.findOne({ where: { user: user } });
 
     if (card) {
-      const expCard = card.expiration.split("-");
+      const expCard = card.expiration.split('-');
       const dateCard = expCard[expCard.length - 1];
-      const [monthCard, yearCard] = dateCard.split("/");
+      const [monthCard, yearCard] = dateCard.split('/');
       const currentDate = new Date();
       const currentMonth = currentDate.getMonth() + 1;
       const currentYear = currentDate.getFullYear();
@@ -250,7 +250,7 @@ export class PaymentService {
       createdAt: new Date(),
       updatedAt: null,
       amount,
-      bankCode: bankCode || "",
+      bankCode: bankCode || '',
       orderInfo: `Thanh toan cho ma GD: ${orderId}`,
       payDate: new Date().toISOString(),
       txnRef: orderId,
@@ -276,7 +276,7 @@ export class PaymentService {
     }
     str.sort();
     for (key = 0; key < str.length; key++) {
-      sorted[str[key]] = encodeURIComponent(data[str[key]]).replace(/%20/g, "+");
+      sorted[str[key]] = encodeURIComponent(data[str[key]]).replace(/%20/g, '+');
     }
     return sorted;
   }

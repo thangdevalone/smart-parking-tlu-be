@@ -1,5 +1,4 @@
-import { BaseEntity, Column, OneToMany, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
-import { User } from '../user';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('roles')
 export class Role extends BaseEntity {
@@ -18,8 +17,8 @@ export class Role extends BaseEntity {
   @Column(
     {
       type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-    },
+      default: () => 'CURRENT_TIMESTAMP'
+    }
   )
   createdAt: Date;
 
@@ -27,8 +26,8 @@ export class Role extends BaseEntity {
     {
       type: 'timestamp',
       default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP',
-    },
+      onUpdate: 'CURRENT_TIMESTAMP'
+    }
   )
   updatedAt: Date;
 }

@@ -1,2 +1,2 @@
-export * from './base.service'
-export * from './i.base.service'
+export * from './base.service';
+export * from './i.base.service';

@@ -6,7 +6,6 @@ NGUYEN VAN A
 07/15
 Mật khẩu OTP	123456
 
-
 https://sandbox.vnpayment.vn/merchantv2/
 haidang02032003@gmail.com
 Haidang2003x@

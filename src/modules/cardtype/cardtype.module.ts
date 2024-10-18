@@ -11,6 +11,7 @@ import { UserHttpModule } from '../user';
   imports: [TypeOrmModule.forFeature([CardType]), forwardRef(() => UserHttpModule)],
   providers: [CardTypeService, LoggerService, CardTypeRepository],
   exports: [CardTypeService],
-  controllers: [CardTypeController],
+  controllers: [CardTypeController]
 })
-export class CardTypeModule { }
+export class CardTypeModule {
+}

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('cardtypes')
 export class CardType extends BaseEntity {
@@ -14,8 +14,8 @@ export class CardType extends BaseEntity {
   @Column(
     {
       type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-    },
+      default: () => 'CURRENT_TIMESTAMP'
+    }
   )
   createdAt: Date;
 
@@ -23,8 +23,8 @@ export class CardType extends BaseEntity {
     {
       type: 'timestamp',
       default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP',
-    },
+      onUpdate: 'CURRENT_TIMESTAMP'
+    }
   )
   updatedAt: Date;
 

@@ -8,16 +8,17 @@ import { JwtStrategy, LocalStrategy } from './strategies';
 import { EmailService, MailModule } from 'src/modules/mail';
 
 @Module({
-    imports: [RoleModule, UserModule, MailModule, JwtModule.registerAsync({
-        useFactory: (config: ConfigService) => ({
-            secret: config.get('auth.jwt.secret'),
-            signOptions: { expiresIn: '1d' },
-        }),
-        inject: [ConfigService],
+  imports: [RoleModule, UserModule, MailModule, JwtModule.registerAsync({
+    useFactory: (config: ConfigService) => ({
+      secret: config.get('auth.jwt.secret'),
+      signOptions: { expiresIn: '1d' }
     }),
-    ],
-    providers: [AuthService, UserService, RoleService, EmailService, LocalStrategy, JwtStrategy],
-    controllers: [AuthController],
-    exports: [AuthService]
+    inject: [ConfigService]
+  })
+  ],
+  providers: [AuthService, UserService, RoleService, EmailService, LocalStrategy, JwtStrategy],
+  controllers: [AuthController],
+  exports: [AuthService]
 })
-export class AuthModule { }
+export class AuthModule {
+}

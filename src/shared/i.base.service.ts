@@ -1,17 +1,17 @@
-import { EntityId } from 'typeorm/repository/EntityId'
-import { DeleteResult } from 'typeorm'
+import { EntityId } from 'typeorm/repository/EntityId';
+import { DeleteResult } from 'typeorm';
 
 export interface IBaseService<T> {
-  index(filter: any): Promise<T[]>
+  index(filter: any): Promise<T[]>;
 
-  findById(id: EntityId): Promise<T>
+  findById(id: EntityId): Promise<T>;
 
-  findByIds(id: [EntityId]): Promise<T[]>
+  findByIds(id: [EntityId]): Promise<T[]>;
 
-  store(data: any): Promise<T>
+  store(data: any): Promise<T>;
 
-  update(id: EntityId, data: any): Promise<T>
+  update(id: EntityId, data: any): Promise<T>;
 
-  delete(id: EntityId): Promise<DeleteResult>
+  delete(id: EntityId): Promise<DeleteResult>;
 
 }

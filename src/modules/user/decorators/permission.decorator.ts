@@ -1,8 +1,8 @@
-import { applyDecorators, SetMetadata, UseGuards } from "@nestjs/common";
-import { PermissionGuard } from "../guards";
-import { Roles } from "src/types";
+import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common';
+import { PermissionGuard } from '../guards';
+import { Roles } from 'src/types';
 
-export const PERMISSIONS_KEY = "Permissions";
+export const PERMISSIONS_KEY = 'Permissions';
 
 export const Permission = (...permissions: string[]) => {
   return applyDecorators(

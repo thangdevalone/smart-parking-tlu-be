@@ -4,8 +4,8 @@ import type { Request } from 'express';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-    public override getRequest(context: ExecutionContext): Request {
-        return context.switchToHttp().getRequest<Request>();
-    }
+  public override getRequest(context: ExecutionContext): Request {
+    return context.switchToHttp().getRequest<Request>();
+  }
 }
 

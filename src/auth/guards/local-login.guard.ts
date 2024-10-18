@@ -4,10 +4,10 @@ import type { Request } from 'express';
 
 @Injectable()
 export class LocalLoginGuard extends AuthGuard('local') implements CanActivate {
-    public override async canActivate(context: ExecutionContext): Promise<boolean> {
-        const result = <boolean>await super.canActivate(context);
-        const request = context.switchToHttp().getRequest<Request>();
-        await super.logIn(request as any);
-        return result;
-    }
+  public override async canActivate(context: ExecutionContext): Promise<boolean> {
+    const result = <boolean>await super.canActivate(context);
+    const request = context.switchToHttp().getRequest<Request>();
+    await super.logIn(request as any);
+    return result;
+  }
 }

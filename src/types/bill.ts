@@ -1,4 +1,4 @@
 export enum BillStatus {
-    PAID = 'paid',
-    UNPAID = 'unpaid',
+  PAID = 'paid',
+  UNPAID = 'unpaid',
 }

@@ -7,7 +7,7 @@ import { CardModule } from './card';
 import { CardTypeModule } from './cardtype';
 import { MailModule } from './mail';
 import { TicketModule } from './ticket';
-import { PaymentModule } from "./payments";
+import { PaymentModule } from './payments';
 
 @Module({
   imports: [
@@ -21,6 +21,7 @@ import { PaymentModule } from "./payments";
     MailModule,
     TicketModule,
     PaymentModule
-  ],
+  ]
 })
-export class MainModule { }
+export class MainModule {
+}
