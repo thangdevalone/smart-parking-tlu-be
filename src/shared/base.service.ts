@@ -1,8 +1,8 @@
-import { BaseEntity, DeleteResult, EntityTarget, Repository } from 'typeorm';
-import { IBaseService } from './i.base.service';
-import { EntityId } from 'typeorm/repository/EntityId';
-import { LoggerService } from 'src/logger';
-import { PaginationDto } from 'src/types';
+import { BaseEntity, DeleteResult, EntityTarget, Repository } from "typeorm";
+import { IBaseService } from "./i.base.service";
+import { EntityId } from "typeorm/repository/EntityId";
+import { LoggerService } from "src/logger";
+import { PaginationDto } from "src/types";
 
 export class BaseService<T extends BaseEntity, R extends Repository<T>> implements IBaseService<T> {
   protected readonly repository: R;
@@ -45,8 +45,8 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     totalItems: number,
     hasNext: boolean
   }> {
-    const { limit = 10, page = 1, sortBy = 'createdAt', sortType = 'ASC', search = '' } = pagination;
-    const queryBuilder = this.repository.createQueryBuilder('entity');
+    const { limit = 10, page = 1, sortBy = "createdAt", sortType = "ASC", search = "" } = pagination;
+    const queryBuilder = this.repository.createQueryBuilder("entity");
     if (search.length > 0 && filed) {
       queryBuilder.orWhere(`entity.${filed} LIKE :search`, { search: `%${search}%` });
     }
@@ -56,7 +56,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     }
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
@@ -66,7 +66,7 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
       paginate: results,
       page: page,
       totalPages,
-      hasNext: page >= totalPages ? false : true,
+      hasNext: page < totalPages,
       totalItems: total
     };
   }
@@ -74,15 +74,13 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
 
   async deleteMultiple(ids: number[], entity: EntityTarget<T>): Promise<DeleteResult> {
     try {
-      const deleteResult = await this.repository.createQueryBuilder()
+      return await this.repository.createQueryBuilder()
         .delete()
         .from(entity)
-        .where('id IN (:...ids)', { ids })
+        .where("id IN (:...ids)", { ids })
         .execute();
-
-      return deleteResult;
     } catch (e) {
-      throw new Error('Bản ghi đang tham chiếu tới dữ liệu khác');
+      throw new Error("Bản ghi đang tham chiếu tới dữ liệu khác");
     }
   }
 

@@ -1,8 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, BaseEntity } from 'typeorm';
-import { Card } from '../card';
-import { BillStatus } from 'src/types';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BillStatus } from "src/types";
+import { User } from "../user";
 
-@Entity('bills')
+@Entity("bills")
 export class Bill extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,30 +17,30 @@ export class Bill extends BaseEntity {
   price: number;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: BillStatus,
-    default: BillStatus.UNPAID,
+    default: BillStatus.UNPAID
   })
   @Column()
   billStatus: BillStatus;
 
-  @ManyToOne(() => Card, card => card.id)
-  card: Card;
+  @ManyToOne(() => User, user => user.id)
+  user: User;
 
   @Column(
     {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-    },
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP"
+    }
   )
   createdAt: Date;
 
   @Column(
     {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP',
-    },
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
+    }
   )
   updatedAt: Date;
 
