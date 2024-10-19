@@ -69,6 +69,7 @@ export class TicketService {
       const plate = response["text"] ?? "";
 
       await this.cardService.updateCard(cardId, { licensePlate: plate });
+
       const bill = await this.billService.createBill(card.data.user.id, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
       await this.historyService.createHistory(imagePath, bill.id + "");
 

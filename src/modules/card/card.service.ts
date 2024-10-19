@@ -52,7 +52,7 @@ export class CardService extends BaseService<Card, CardyRepository> {
       paginate: results,
       page: page,
       totalPages,
-      hasNext: page >= totalPages ? false : true,
+      hasNext: page < totalPages,
       totalItems: total
     };
   }
@@ -60,6 +60,7 @@ export class CardService extends BaseService<Card, CardyRepository> {
   async getCardDetail(idCard: string) {
     const card = await this.repository.createQueryBuilder('card')
       .leftJoinAndSelect('card.cardType', 'cardType')
+      .leftJoinAndSelect('card.user', 'user')
       .where('card.id = :id', { id: +idCard })
       .getOne();
 
