@@ -1,12 +1,12 @@
-import { Body, Controller, ParseFilePipeBuilder, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { TicketService } from './ticket.service';
-import { TicketCheckinDto } from './ticket.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards';
-import { GuardOrAdminRequired } from '../user';
+import { Body, Controller, ParseFilePipeBuilder, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { TicketService } from "./ticket.service";
+import { TicketCheckinDto } from "./ticket.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiBearerAuth } from "@nestjs/swagger";
+import { JwtAuthGuard } from "src/auth/guards";
+import { GuardOrAdminRequired } from "../user";
 
-@Controller('ticket')
+@Controller("ticket")
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 export class TicketController {
@@ -14,8 +14,8 @@ export class TicketController {
   constructor(private readonly ticketService: TicketService) {
   }
 
-  @Post('checkin')
-  @UseInterceptors(FileInterceptor('image'))
+  @Post("checkin")
+  @UseInterceptors(FileInterceptor("image"))
   @GuardOrAdminRequired()
   public async checkin(
     @Body() checkinDto: TicketCheckinDto,
@@ -33,8 +33,8 @@ export class TicketController {
     return await this.ticketService.checkin(checkinDto.cardId, image);
   }
 
-  @Post('checkout')
-  @UseInterceptors(FileInterceptor('image'))
+  @Post("checkout")
+  @UseInterceptors(FileInterceptor("image"))
   @GuardOrAdminRequired()
   public async checkout(
     @Body() checkinDto: TicketCheckinDto,

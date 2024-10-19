@@ -15,6 +15,7 @@ export class CardController {
   }
 
   @Get()
+  @AdminRequired()
   @ApiQuery({ name: "page", required: false, type: Number })
   @ApiQuery({ name: "search", required: false, type: String })
   @ApiQuery({ name: "limit", required: false, type: Number })

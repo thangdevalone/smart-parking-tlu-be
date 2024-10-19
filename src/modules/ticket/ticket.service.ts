@@ -8,6 +8,7 @@ import { join, resolve } from "path";
 import * as fs from "fs";
 import { BillStatus } from "../../types";
 import { Messages } from "../../config";
+import FormData from "form-data";
 
 @Injectable()
 export class TicketService {
@@ -54,23 +55,32 @@ export class TicketService {
     const imagePath = join(uploadsDir, `${Date.now()}_checkin_${Image.originalname}`);
     fs.writeFileSync(imagePath, Image.buffer);
 
-    const responsive = await axios.post(this.config.get("service.ai"), {
-      image: Image
-    });
+    try {
 
-    const plate = responsive["text"] ?? "";
+      const formData = new FormData();
+      formData.append("image", Image.buffer, Image.originalname);
 
-    await this.cardService.updateCard(cardId, { licensePlate: plate });
-    const bill = await this.billService.createBill(card.data.user.id, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
-    await this.historyService.createHistory(imagePath, bill.id + "");
+      const response = await axios.post(this.config.get("service.ai"), formData, {
+        headers: {
+          ...formData.getHeaders()
+        }
+      });
 
-    return {
-      data: {
-        ...bill
-      },
-      message: "Thành công!"
-    };
+      const plate = response["text"] ?? "";
 
+      await this.cardService.updateCard(cardId, { licensePlate: plate });
+      const bill = await this.billService.createBill(card.data.user.id, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
+      await this.historyService.createHistory(imagePath, bill.id + "");
+
+      return {
+        data: {
+          ...bill
+        },
+        message: "Thành công!"
+      };
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async checkout(cardId: string, Image: Express.Multer.File) {
