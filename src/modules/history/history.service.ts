@@ -38,7 +38,7 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
       paginate: results,
       page: page,
       totalPages,
-      hasNext: page >= totalPages ? false : true,
+      hasNext: page < totalPages,
       totalItems: total
     };
   }
@@ -69,7 +69,7 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
 
     return {
       data: history,
-      message: 'History updated successfully'
+      message: Messages.history.historyUpdated
     };
   }
 

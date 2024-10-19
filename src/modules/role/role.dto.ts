@@ -1,37 +1,37 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateRoleDto {
   @ApiProperty({
     type: String,
-    default: 'admin'
+    default: "admin"
   })
-  @IsString({ message: 'Name must be a string' })
-  @MaxLength(30, { message: 'Name maximum 30 characters' })
+  @IsString({ message: "Tên phải là một chuỗi" })
+  @MaxLength(30, { message: "Tên tối đa 30 ký tự" })
   name: string;
 
   @IsOptional()
-  @IsString({ message: 'Description must be a string' })
-  @MaxLength(150, { message: 'Description maximum 150 characters' })
+  @IsString({ message: "Mô tả phải là một chuỗi" })
+  @MaxLength(150, { message: "Mô tả tối đa 150 ký tự" })
   description?: string;
 }
 
 export class UpdateRoleDto {
   @ApiProperty({
     type: String,
-    default: 'update role name'
+    default: "update role name"
   })
-  @IsString({ message: 'Name must be a string' })
+  @IsString({ message: "Tên phải là một chuỗi" })
   @IsOptional()
-  @MaxLength(30, { message: 'Name maximum 30 characters' })
+  @MaxLength(30, { message: "Tên tối đa 30 ký tự" })
   name?: string;
 
   @ApiProperty({
     type: String,
-    default: 'update role Description'
+    default: "update role Description"
   })
   @IsOptional()
-  @IsString({ message: 'Description must be a string' })
-  @MaxLength(150, { message: 'Description maximum 150 characters' })
+  @IsString({ message: "Mô tả phải là một chuỗi" })
+  @MaxLength(150, { message: "Mô tả tối đa 150 ký tự" })
   description?: string;
 }

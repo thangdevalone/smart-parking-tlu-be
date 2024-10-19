@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { join, resolve } from "path";
 import * as fs from "fs";
 import { BillStatus } from "../../types";
+import { Messages } from "../../config";
 
 @Injectable()
 export class TicketService {
@@ -22,9 +23,9 @@ export class TicketService {
   async checkin(cardId: string, Image: Express.Multer.File) {
     const card = await this.cardService.getCardDetail(cardId);
 
-    if (!card) throw new Error("Card not found");
+    if (!card) throw new Error(Messages.card.notFound);
 
-    if (card.data.licensePlate !== "") throw new Error("Card is already checked in");
+    if (card.data.licensePlate !== "") throw new Error(Messages.card.alreadyExists);
 
     let monthlyCard = false;
 
@@ -60,15 +61,14 @@ export class TicketService {
     const plate = responsive["text"] ?? "";
 
     await this.cardService.updateCard(cardId, { licensePlate: plate });
-
-    const bill = await this.billService.createBill(cardId, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
-    const history = await this.historyService.createHistory(imagePath, bill.id + "");
+    const bill = await this.billService.createBill(card.data.user.id, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
+    await this.historyService.createHistory(imagePath, bill.id + "");
 
     return {
       data: {
         ...bill
       },
-      message: "Checkin successfully"
+      message: "Thành công!"
     };
 
   }
@@ -76,9 +76,9 @@ export class TicketService {
   async checkout(cardId: string, Image: Express.Multer.File) {
     const card = await this.cardService.getCardDetail(cardId);
 
-    if (!card) throw new Error("Card not found");
+    if (!card) throw new Error(Messages.card.notFound);
 
-    if (card.data.licensePlate === "") throw new Error("Card is not checked in");
+    if (card.data.licensePlate === "") throw new Error(Messages.card.alreadyExists);
 
     if (!Image || !Image.buffer) {
       throw new Error("File upload failed or file buffer is undefined");
@@ -93,13 +93,13 @@ export class TicketService {
     fs.writeFileSync(imagePath, Image.buffer);
 
     const bill = await this.billService.getDetail(card.data.user);
-    if (!bill) throw new Error("Bill not found");
+    if (!bill) throw new Error(Messages.bill.notFound);
 
     const newBill = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID });
 
     const history = await this.historyService.findOne({ bill: bill.id, imageOut: null });
 
-    if (!history) throw new Error("History not found");
+    if (!history) throw new Error(Messages.history.notFound);
 
     await this.historyService.updateHistory(history.id + "", { imageOut: imagePath });
 
@@ -113,7 +113,7 @@ export class TicketService {
       data: {
         ...newBill
       },
-      message: "Checkout successfully"
+      message: "Thành công!"
     };
   }
 }

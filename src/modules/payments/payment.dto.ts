@@ -18,6 +18,15 @@ export class CreatePaymentDTO {
   bankCode: string;
 }
 
+export class CreatePaymentUserDTO {
+  @IsNumber()
+  @IsNotEmpty({ message: "Order is required and must be a string." })
+  user: number;
+
+  @IsNumber()
+  cardTypeId: number;
+}
+
 export class CreatePaymentZLPDTO {
   @IsNumber()
   @IsNotEmpty({ message: "Amount is required and must be a number." })

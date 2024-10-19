@@ -36,7 +36,6 @@ export class ResponseInterceptor implements NestInterceptor {
 
     if (response.status) response.status(statusCode);
 
-    // xu ly truong hop gia ve co paginate thi sua thanh nhu sau 
 
     if (res?.paginate) {
       return {

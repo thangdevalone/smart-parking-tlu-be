@@ -21,9 +21,9 @@ export class BillService extends BaseService<Bill, BillRepository> {
     super(billRepository, logger);
   }
 
-  async createBill(cardId: string, price: number) {
+  async createBill(user: number, price: number) {
     const bill = await this.store({
-      // card: cardId,
+      user,
       price,
       billStatus: BillStatus.UNPAID,
       startDate: new Date()
@@ -33,11 +33,11 @@ export class BillService extends BaseService<Bill, BillRepository> {
     return bill;
   }
 
-  async updateBill(id: string, updateBillDeto: UpdateBillDto) {
+  async updateBill(id: string, updateBillDTO: UpdateBillDto) {
     const bill = await this.findOne({ id });
     if (!bill) throw new NotFoundException(Messages.bill.notFound);
 
-    bill.billStatus = updateBillDeto.billStatus;
+    bill.billStatus = updateBillDTO.billStatus;
     bill.endDate = new Date();
 
     await this.repository.save(bill);
@@ -63,23 +63,19 @@ export class BillService extends BaseService<Bill, BillRepository> {
     if (payload.role.name.toLowerCase() === "admin") {
       return await this.paginate(paginate);
     }
-    const user = await this.userRepository.findOne({ where: { id: payload.id } });
-
-    if (!user) throw new NotFoundException(Messages.auth.notFound);
 
     const { limit = 10, page = 1, sortBy = "createdAt", sortType = "ASC", search = "" } = paginate;
 
     const queryBuilder = this.repository
       .createQueryBuilder("bill")
-      .where("bill.userId = :userId", { userId: user.id });
+      .where("bill.user = :user", { user: payload.id });
 
     if (search) {
       queryBuilder.andWhere("bill.price LIKE :search", { search: `%${search}%` });
     }
 
-    queryBuilder.orderBy(`bill.${sortBy}`, sortType);
-
     const [result, total] = await queryBuilder
+      .addOrderBy(`bill.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();

@@ -6,8 +6,8 @@ export class CreateCradTypeDto {
     type: String,
     default: 've thang'
   })
-  @IsString({ message: 'Name must be a string' })
-  @MaxLength(20, { message: 'Card Type Name maximum 20 characters' })
+  @IsString({ message: 'Tên phải là một chuỗi' })
+  @MaxLength(20, { message: 'Loại thẻ Tên tối đa 20 ký tự' })
   cardTypeName: string;
 
 
@@ -15,7 +15,7 @@ export class CreateCradTypeDto {
     type: Number,
     default: 3000
   })
-  @IsNumber({}, { message: 'Card Type Price must be a number' })
+  @IsNumber({}, { message: 'Giá phải là một số' })
   cardTypePrice: number;
 }
 
@@ -26,14 +26,14 @@ export class UpdateCardTypeDto {
   })
   @IsString({ message: 'Name must be a string' })
   @IsOptional()
-  @MaxLength(20, { message: 'Card Type Name maximum 20 characters' })
+  @MaxLength(20, { message: 'Loại thẻ Tên tối đa 20 ký tự' })
   cardTypeName: string;
 
   @ApiProperty({
     type: Number,
     default: 3000
   })
-  @IsNumber({}, { message: 'Card Type Price must be a number' })
+  @IsNumber({}, { message: 'Giá phải là một số' })
   @IsOptional()
   cardTypePrice: number;
 }

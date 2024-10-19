@@ -1,21 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
-import { Role } from 'src/modules';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEmail, IsNotEmpty, IsOptional } from "class-validator";
+import { Role } from "src/modules";
+import { Messages } from "../config";
 
 export class LoginDto {
   @ApiProperty({
-    default: 'A1111'
+    default: "A1111"
   })
   @IsNotEmpty({
-    message: 'USER_CODE_REQUIRED'
+    message: Messages.dto.auth.userCode
   })
   userCode: string;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   password: string;
 }
@@ -23,34 +24,34 @@ export class LoginDto {
 
 export class RegisterDto {
   @ApiProperty({
-    default: 'John Doe'
+    default: "John Doe"
   })
   @IsNotEmpty({
-    message: 'FULL_NAME_REQUIRED'
+    message: Messages.dto.auth.fullName
   })
   fullName: string;
 
   @ApiProperty({
-    default: 'example@gmail.com'
+    default: "example@gmail.com"
   })
   @IsEmail({}, {
-    message: 'INVALID_EMAIL'
+    message: Messages.dto.auth.email
   })
   email: string;
 
   @ApiProperty({
-    default: 'A99999'
+    default: "A99999"
   })
   @IsNotEmpty({
-    message: 'USER_CODE_REQUIRED'
+    message: Messages.dto.auth.userCode
   })
   userCode: string;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PHONE_REQUIRED'
+    message: Messages.dto.auth.phone
   })
   @IsOptional()
   phone?: string;
@@ -61,10 +62,10 @@ export class RegisterDto {
 
 export class forgotPasswordDto {
   @ApiProperty({
-    default: 'example@gmail.com'
+    default: "example@gmail.com"
   })
   @IsEmail({}, {
-    message: 'INVALID_EMAIL'
+    message: "Email chưa đúng định dạng"
   })
   email: string;
 }
@@ -72,50 +73,50 @@ export class forgotPasswordDto {
 
 export class ResetPasswordDto {
   @ApiProperty({
-    default: 'id user'
+    default: "id user"
   })
-  @IsNotEmpty({ message: 'ID_REQUIRED' })
+  @IsNotEmpty({ message: Messages.dto.auth.id })
   id: number;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   password: string;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   confirmPassword: string;
 }
 
 export class ChangePasswordDto {
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   password: string;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   passwordNew: string;
 
   @ApiProperty({
-    default: 'P@ssword~sample1'
+    default: "P@ssword~sample1"
   })
   @IsNotEmpty({
-    message: 'PASSWORD_REQUIRED'
+    message: Messages.dto.auth.password
   })
   passwordConfirm: string;
 }
@@ -142,8 +143,8 @@ export interface JwtSign {
 
 export class refreshTokenDto {
   @ApiProperty({
-    default: 'refresh token'
+    default: "refresh token"
   })
-  @IsNotEmpty({ message: 'REFRESH_TOKEN_REQUIRED' })
+  @IsNotEmpty({ message: Messages.dto.auth.refreshToken })
   refreshToken: string;
 }

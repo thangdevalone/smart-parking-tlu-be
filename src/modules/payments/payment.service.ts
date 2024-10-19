@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { Request, Response } from "express";
-import { CreatePaymentDTO, CreatePaymentZLPDTO, PaymentInfoQueryDto, PaymentStatus } from "./payment.dto";
+import { CreatePaymentDTO, CreatePaymentUserDTO, PaymentInfoQueryDto, PaymentStatus } from "./payment.dto";
 import moment from "moment";
 import { ConfigService } from "@nestjs/config";
 import * as querystring from "qs";
@@ -16,8 +16,8 @@ import { Card } from "../card";
 import { BillStatus, CardStatus } from "../../types";
 import { CardTypeRepository } from "../cardtype/cardtype.repository";
 import { CardType } from "../cardtype";
-import CryptoJS from "crypto-js";
-import axios from "axios";
+import { Payload } from "../../auth";
+import { Messages } from "../../config";
 
 @Injectable()
 export class PaymentService {
@@ -30,7 +30,34 @@ export class PaymentService {
     private readonly config: ConfigService) {
   }
 
-  // VNPAY
+  async createPaymentUser(payload: Payload, createPaymentUserDTO: CreatePaymentUserDTO) {
+    if (payload.role.name.toLowerCase() !== "admin") throw new NotFoundException(Messages.common.actionNotPermitted);
+
+    const user = await this.userRepository.findOne({ where: { id: payload.id } });
+
+    if (!user) throw new NotFoundException(Messages.auth.notFound);
+
+    const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: "vethang" } });
+    const card = await this.cardRepository.findOne({ where: { cardType, user: null } });
+    if (card && card.cardStatus === CardStatus.ACTIVE) {
+      const newDate = new Date();
+      card.user = user;
+      card.expiration = `${newDate.getMonth()}/${newDate.getFullYear()}`;
+      await this.cardRepository.save(card);
+      const bill = this.billRepository.create({
+        user: user,
+        billStatus: BillStatus.PAID,
+        startDate: new Date(),
+        endDate: new Date(),
+        price: cardType.cardTypePrice
+      });
+      await this.billRepository.save(bill);
+    }
+
+    return true;
+
+  }
+
   async createPaymentVNP(createPaymentDTO: CreatePaymentDTO, req: Request, user: number) {
 
     const userEntity = await this.userRepository.findOne({ where: { id: user } });
@@ -39,7 +66,6 @@ export class PaymentService {
     console.log("isValidate", isValidate);
     if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
 
-    const tz = "Asia/Ho_Chi_Minh";
     const date = new Date();
     let createDate = moment(date).format("YYYYMMDDHHmmss");
 
@@ -52,7 +78,7 @@ export class PaymentService {
 
     let orderId = moment(date).format("DDHHmmss");
 
-    const { amount, language, bankCode, order } = createPaymentDTO;
+    const { amount, language, bankCode } = createPaymentDTO;
 
     const locale = language || "vn";
 
@@ -109,9 +135,10 @@ export class PaymentService {
           card.expiration += `-${newDate.getMonth() + 1}/${newDate.getFullYear()}`;
           await this.cardRepository.save(card);
           const bill = this.billRepository.create({
-            // card: card,
+            user: payment.user,
             billStatus: BillStatus.PAID,
             startDate: new Date(),
+            endDate: new Date(),
             price: payment.amount
           });
           await this.billRepository.save(bill);
@@ -124,9 +151,10 @@ export class PaymentService {
             card.expiration = `${newDate.getMonth()}/${newDate.getFullYear()}`;
             await this.cardRepository.save(card);
             const bill = this.billRepository.create({
-              // card: card,
+              user: payment.user,
               billStatus: BillStatus.PAID,
               startDate: new Date(),
+              endDate: new Date(),
               price: payment.amount
             });
             await this.billRepository.save(bill);
@@ -146,86 +174,6 @@ export class PaymentService {
       return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
     }
   }
-
-  // ZALOPAY
-  async createPaymentZLP(createPaymentZLPDTO: CreatePaymentZLPDTO, user: number) {
-    const userEntity = await this.userRepository.findOne({ where: { id: user } });
-    const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
-    console.log("isValidate", isValidate);
-    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
-
-    const embed_data = {
-      redirecturl: "http://localhost:5173/admin/payment/pay?statusPayment=01"
-    };
-    const date = new Date();
-    let createDate = moment(date).format("YYYYMMDDHHmmss");
-    const items = [];
-    const transID = moment(date).format("DDHHmmss");
-
-    let order: any = {
-      app_id: this.config.get("payment.zlp.app_id"),
-      app_trans_id: transID,
-      app_user: "user123",
-      app_time: Date.now(),
-      item: JSON.stringify(items),
-      embed_data: JSON.stringify(embed_data),
-      amount: 50000,
-      callback_url: "https://b074-1-53-37-194.ngrok-free.app/callback",
-      description: `Payment for the order #${transID}`,
-      bank_code: ""
-    };
-
-    const data =
-      this.config.get("payment.zlp.app_id") +
-      "|" +
-      order.app_trans_id +
-      "|" +
-      order.app_user +
-      "|" +
-      order.amount +
-      "|" +
-      order.app_time +
-      "|" +
-      order.embed_data +
-      "|" +
-      order.item;
-    order.mac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key1")).toString();
-
-    const result = await axios.post(this.config.get("payment.zlp.endpoint"), null, { params: order });
-
-    if (result.data.sub_return_code <= -400) {
-      throw new NotFoundException("Lỗi hệ thống");
-    }
-
-    const payment = await this.createPayment(userEntity, createPaymentZLPDTO.amount, transID);
-
-    if (!payment) {
-      throw new NotFoundException("Lỗi hệ thống");
-    }
-
-    return {
-      data: result.data
-    };
-
-
-  }
-
-  async callbackZLP(data: string, mac: string, res: Response) {
-    let hashMac = CryptoJS.HmacSHA256(data, this.config.get("payment.zlp.key2")).toString();
-    if (mac === hashMac) {
-      // thanh toan thanh cong
-      let dataJson = JSON.parse(data, this.config.get("payment.zlp.key2"));
-      console.log("dataJson", dataJson);
-    } else {
-      return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
-    }
-
-  }
-
-  // MOMO
-  async createPaymentMM() {
-  }
-
 
   // private function
 

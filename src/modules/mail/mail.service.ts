@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
-import { EmailDto } from './mail.dto';
+import { Injectable } from "@nestjs/common";
+import { MailerService } from "@nestjs-modules/mailer";
+import { EmailDto } from "./mail.dto";
 
 @Injectable()
 export class EmailService {
@@ -13,6 +13,7 @@ export class EmailService {
       subject: data.subject,
       text: data?.text,
       html: data?.html
+    }).then(r => {
     });
   }
 }

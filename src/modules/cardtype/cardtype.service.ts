@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { BaseService } from 'src/shared';
-import { CardType } from './cardtype.entity';
-import { CardTypeRepository } from './cardtype.repository';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LoggerService } from 'src/logger';
-import { CreateCradTypeDto, UpdateCardTypeDto } from './cardtype.dto';
-import { PaginationDto } from 'src/types';
+import { Injectable } from "@nestjs/common";
+import { BaseService } from "src/shared";
+import { CardType } from "./cardtype.entity";
+import { CardTypeRepository } from "./cardtype.repository";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { LoggerService } from "src/logger";
+import { CreateCradTypeDto, UpdateCardTypeDto } from "./cardtype.dto";
+import { PaginationDto } from "src/types";
+import { Messages } from "../../config";
 
 @Injectable()
 export class CardTypeService extends BaseService<CardType, CardTypeRepository> {
@@ -23,41 +24,41 @@ export class CardTypeService extends BaseService<CardType, CardTypeRepository> {
 
     const oldCardType = await this.index({ cardTypeName: data.cardTypeName });
 
-    if (oldCardType.length > 0) throw new Error('Card Type already exists');
+    if (oldCardType.length > 0) throw new Error(Messages.cardType.alreadyExists);
 
     const cardType = await this.store(data);
 
-    if (!cardType) throw new Error('Card Type not created');
+    if (!cardType) throw new Error(Messages.cardType.notCreated);
 
     return {
       data: cardType,
-      message: 'Card Type created'
+      message: Messages.cardType.created
     };
   }
 
   async getCardTypes(pagination: PaginationDto) {
-    return this.paginate(pagination, 'cardTypeName');
+    return this.paginate(pagination, "cardTypeName");
   }
 
   async deleteCardType(ids: number[]) {
     const res = await this.deleteMultiple(ids, CardType);
     return {
-      message: 'Card Type deleted successfully'
+      message: Messages.cardType.deleted
     };
   }
 
   async updateCardType(idCardType: string, data: UpdateCardTypeDto) {
-    const cardtype = await this.repository.findOne({ where: { id: +idCardType } });
+    const cardType = await this.repository.findOne({ where: { id: +idCardType } });
 
-    if (!cardtype) throw new Error('Card Type not found');
+    if (!cardType) throw new Error("Card Type not found");
 
-    Object.assign(cardtype, data);
+    Object.assign(cardType, data);
 
-    await this.repository.save(cardtype);
+    await this.repository.save(cardType);
 
     return {
-      data: cardtype,
-      message: 'Card Type updated'
+      data: cardType,
+      message: Messages.cardType.cardTypeUpodated
     };
 
   }
