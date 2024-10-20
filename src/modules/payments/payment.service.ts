@@ -9,7 +9,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Payment } from "./payment.entity";
 import { PaymentRepository } from "./payment.repository";
 import { BillRepository } from "../bill/bill.repository";
-import { CardyRepository } from "../card/card.repository";
+import { CardRepository } from "../card/card.repository";
 import { User, UserRepository } from "../user";
 import { Bill } from "../bill";
 import { Card } from "../card";
@@ -24,7 +24,7 @@ export class PaymentService {
   constructor(
     @InjectRepository(Payment) protected readonly paymentRepository: PaymentRepository,
     @InjectRepository(Bill) private readonly billRepository: BillRepository,
-    @InjectRepository(Card) private readonly cardRepository: CardyRepository,
+    @InjectRepository(Card) private readonly cardRepository: CardRepository,
     @InjectRepository(User) private readonly userRepository: UserRepository,
     @InjectRepository(CardType) private readonly cardTypeRepository: CardTypeRepository,
     private readonly config: ConfigService) {

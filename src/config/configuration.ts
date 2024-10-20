@@ -31,13 +31,10 @@ export const configuration = () => ({
       hashSecret: process.env.VNP_HASHSERRET,
       url: process.env.VNP_URL,
       returnUrl: process.env.RETURN_URL_VNP
-    },
-    zlp: {
-      app_id: process.env.ZALO_APP_ID,
-      key1: process.env.ZALO_KEY1,
-      key2: process.env.ZALO_KEY2,
-      endpoint: process.env.ZALO_EP
-    },
-    mm: {}
+    }
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
   }
 });
