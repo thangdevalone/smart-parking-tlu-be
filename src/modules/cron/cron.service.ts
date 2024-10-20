@@ -1,12 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
-import moment from "moment-timezone";
-import { Messages } from "../../config";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Card } from "../card";
-import { Repository } from "typeorm";
-import { QueueService } from "../queue/queue.service";
-import { CardUserQueue } from "../../types";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import moment from 'moment-timezone';
+import { Messages } from '../../config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Card } from '../card';
+import { Repository } from 'typeorm';
+import { QueueService } from '../queue/queue.service';
+import { CardUserQueue } from '../../types';
 
 @Injectable()
 export class CronService {
@@ -17,25 +17,25 @@ export class CronService {
   ) {
   }
 
-  @Cron("45 * * * * *")
+  @Cron('45 * * * * *')
   async handleCron() {
-    // if (this.isLastDayOfMonth()) {
-    const cardUser = await this.getAllCardUser() as unknown as CardUserQueue[];
-    await this.queueService.enqueueEmail(cardUser);
-    // }
+    if (this.isLastDayOfMonth()) {
+      const cardUser = await this.getAllCardUser() as unknown as CardUserQueue[];
+      await this.queueService.enqueueEmail(cardUser);
+    }
   }
 
   private isLastDayOfMonth(): boolean {
-    const today = moment.tz("Asia/Ho_Chi_Minh");
-    const tomorrow = moment(today).add(1, "day");
+    const today = moment.tz('Asia/Ho_Chi_Minh');
+    const tomorrow = moment(today).add(1, 'day');
     return tomorrow.date() === 1;
   }
 
   private async getAllCardUser() {
-    const cards = await this.cardRepository.createQueryBuilder("card")
-      .leftJoinAndSelect("card.user", "user")
-      .addSelect(["user.id", "user.fullName", "user.email", "user.userCode"])
-      .where("user.id IS NOT NULL")
+    const cards = await this.cardRepository.createQueryBuilder('card')
+      .leftJoinAndSelect('card.user', 'user')
+      .addSelect(['user.id', 'user.fullName', 'user.email', 'user.userCode'])
+      .where('user.id IS NOT NULL')
       .getMany();
 
     if (!cards || cards.length === 0) throw new NotFoundException(Messages.card.notFound);
