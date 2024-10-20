@@ -17,7 +17,7 @@ export class CronService {
   ) {
   }
 
-  @Cron('45 * * * * *')
+  @Cron('30 8 * * * *')
   async handleCron() {
     if (this.isLastDayOfMonth()) {
       const cardUser = await this.getAllCardUser() as unknown as CardUserQueue[];
