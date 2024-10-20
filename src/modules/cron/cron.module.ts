@@ -3,8 +3,7 @@ import { CronService } from "./cron.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Card } from "../card";
 import { EmailService, MailModule } from "../mail";
-import { QueueService } from "../queue/queue.service";
-import { QueueModule } from "../queue/queue.module"; // Import QueueModule
+import { QueueModule } from "../queue/queue.module";
 
 @Module({
   imports: [
@@ -12,7 +11,7 @@ import { QueueModule } from "../queue/queue.module"; // Import QueueModule
     MailModule,
     QueueModule
   ],
-  providers: [CronService, EmailService, QueueService]
+  providers: [CronService, EmailService]
 })
 export class CronModule {
 }

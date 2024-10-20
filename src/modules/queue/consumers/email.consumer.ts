@@ -10,7 +10,7 @@ export class EmailConsumer extends WorkerHost {
   }
 
   async process(job: Job<any, any, string>): Promise<any> {
-    console.log("Processing job", job.data);
+    this.emailService.sendMail(job.data);
   }
 
   @OnWorkerEvent("active")

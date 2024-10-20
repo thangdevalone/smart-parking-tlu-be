@@ -5,21 +5,24 @@ import { Messages } from "../../config";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Card } from "../card";
 import { Repository } from "typeorm";
+import { QueueService } from "../queue/queue.service";
+import { CardUserQueue } from "../../types";
 
 @Injectable()
 export class CronService {
-
   constructor(
     @InjectRepository(Card)
-    protected readonly cardRepository: Repository<Card>
+    protected readonly cardRepository: Repository<Card>,
+    private readonly queueService: QueueService
   ) {
   }
 
   @Cron("45 * * * * *")
   async handleCron() {
-    if (this.isLastDayOfMonth()) {
-      const cardUser = await this.getAllCardUser();
-    }
+    // if (this.isLastDayOfMonth()) {
+    const cardUser = await this.getAllCardUser() as unknown as CardUserQueue[];
+    await this.queueService.enqueueEmail(cardUser);
+    // }
   }
 
   private isLastDayOfMonth(): boolean {
