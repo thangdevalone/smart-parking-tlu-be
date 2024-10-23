@@ -8,4 +8,5 @@ export class CreateBillDto {
 
 export class UpdateBillDto {
   billStatus: BillStatus;
+  price: number;
 }

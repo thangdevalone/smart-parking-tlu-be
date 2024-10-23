@@ -206,12 +206,8 @@ export class PaymentService {
       status: PaymentStatus.PENDING,
       user: userEntity
     });
-
     await this.paymentRepository.save(payment);
-
     return payment;
-
-
   }
 
   private sortObject(data: any) {

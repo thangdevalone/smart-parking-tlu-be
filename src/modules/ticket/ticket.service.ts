@@ -9,16 +9,12 @@ import * as fs from "fs";
 import { BillStatus } from "../../types";
 import { Messages } from "../../config";
 import FormData from "form-data";
+import { handlePrice } from "../../utils";
 
 @Injectable()
 export class TicketService {
 
-  constructor(
-    private readonly billService: BillService,
-    private readonly historyService: HistoryService,
-    private readonly cardService: CardService,
-    private config: ConfigService
-  ) {
+  constructor(private readonly billService: BillService, private readonly historyService: HistoryService, private readonly cardService: CardService, private config: ConfigService) {
   }
 
   async checkin(cardId: string, Image: Express.Multer.File) {
@@ -27,21 +23,6 @@ export class TicketService {
     if (!card) throw new Error(Messages.card.notFound);
 
     if (card.data.licensePlate !== "") throw new Error(Messages.card.alreadyExists);
-
-    let monthlyCard = false;
-
-    if (card.data.cardType.cardTypeName.includes("thang")) {
-      const now = new Date();
-      const newMonth = now.getMonth() + 1;
-      const newYear = now.getFullYear();
-
-      const expCard = card.data.expiration.split("-");
-      const dateCard = expCard[expCard.length - 1];
-      const [monthCard, yearCard] = dateCard.split("/");
-      if (parseInt(monthCard, 10) > newMonth && parseInt(yearCard, 10) === newYear) {
-        monthlyCard = true;
-      }
-    }
 
     if (!Image || !Image.buffer) {
       throw new Error("File upload failed or file buffer is undefined");
@@ -70,14 +51,13 @@ export class TicketService {
 
       await this.cardService.updateCard(cardId, { licensePlate: plate });
 
-      const bill = await this.billService.createBill(card.data.user.id, monthlyCard ? 0 : card.data.cardType.cardTypePrice);
+      const bill = await this.billService.createBill(card.data.user.id, this.handleValidate(card) ? 0 : card.data.cardType.cardTypePrice);
       await this.historyService.createHistory(imagePath, bill.id + "");
 
       return {
         data: {
           ...bill
-        },
-        message: "Thành công!"
+        }, message: "Thành công!"
       };
     } catch (err) {
       console.error(err);
@@ -106,7 +86,9 @@ export class TicketService {
     const bill = await this.billService.getDetail(card.data.user);
     if (!bill) throw new Error(Messages.bill.notFound);
 
-    const newBill = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID });
+    const price = handlePrice(bill.startDate, bill.price, this.handleValidate(card));
+
+    const newBill = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID, price: price });
 
     const history = await this.historyService.findOne({ bill: bill.id, imageOut: null });
 
@@ -123,8 +105,18 @@ export class TicketService {
     return {
       data: {
         ...newBill
-      },
-      message: "Thành công!"
+      }, message: "Thành công!"
     };
+  }
+
+  private handleValidate(card: any): boolean {
+    if (!card.data.cardType.cardTypeName.includes("thang")) {
+      return false;
+    }
+    const now = new Date();
+    const newMonth = now.getMonth() + 1;
+    const newYear = now.getFullYear();
+    const [monthCard, yearCard] = card.data.expiration.split("-").pop()?.split("/") || [];
+    return monthCard && yearCard && parseInt(monthCard, 10) > newMonth && parseInt(yearCard, 10) === newYear;
   }
 }
