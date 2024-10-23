@@ -96,7 +96,13 @@ export class CardService extends BaseService<Card, CardRepository> {
 
     const newDate = new Date();
     const exp = `${newDate.getMonth() + 1}/${newDate.getFullYear()}`;
-    const newCard = await this.store({ ...createCardDto, cardStatus: CardStatus.ACTIVE, expiration: exp });
+
+    const newCard = await this.store({
+      ...createCardDto,
+      user: { id: createCardDto.userId },
+      cardStatus: CardStatus.ACTIVE,
+      expiration: exp
+    });
 
     return {
       data: newCard,
@@ -112,7 +118,7 @@ export class CardService extends BaseService<Card, CardRepository> {
     };
   }
 
-  async updateCard(idCard: string, updateCardDto: UpdateCardDto) {
+  async updateCard(idCard: string, updateCardDto: UpdateCardDto, updatePlate?: boolean) {
     const card = await this.repository.findOne({ where: { id: +idCard } });
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
@@ -122,6 +128,8 @@ export class CardService extends BaseService<Card, CardRepository> {
     filedUpdate.forEach(field => {
       if (updateCardDto[field]) card[field] = updateCardDto[field];
     });
+
+    if (updatePlate) card["licensePlate"] = "";
 
     await this.repository.save(card);
 
