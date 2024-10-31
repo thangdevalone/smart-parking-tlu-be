@@ -1,21 +1,21 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../user";
-import { CardType } from "../cardtype";
-import { CardStatus } from "src/types";
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from '../user';
+import { CardType } from '../cardtype';
+import { CardStatus } from 'src/types';
 
-@Entity("cards")
+@Entity('cards')
 export class Card extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', length: 20, unique: true })
   cardCode: string;
 
-  @Column({ default: "" })
+  @Column({ type: 'varchar', length: 15, default: '' })
   licensePlate?: string;
 
   @Column({
-    type: "enum",
+    type: 'enum',
     enum: CardStatus,
     default: CardStatus.ACTIVE
   })
@@ -32,17 +32,17 @@ export class Card extends BaseEntity {
 
   @Column(
     {
-      type: "timestamp",
-      default: () => "CURRENT_TIMESTAMP"
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP'
     }
   )
   createdAt: Date;
 
   @Column(
     {
-      type: "timestamp",
-      default: () => "CURRENT_TIMESTAMP",
-      onUpdate: "CURRENT_TIMESTAMP"
+      type: 'timestamp',
+      default: () => 'CURRENT_TIMESTAMP',
+      onUpdate: 'CURRENT_TIMESTAMP'
     }
   )
   updatedAt: Date;

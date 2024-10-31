@@ -5,14 +5,11 @@ export class Role extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50, unique: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   description?: string;
-
-  // @OneToMany(() => User, user => user.role)
-  // users: User[];
 
   @Column(
     {

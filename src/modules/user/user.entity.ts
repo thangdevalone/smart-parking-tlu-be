@@ -7,23 +7,20 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   fullName: string;
 
-  @Unique(['phone'])
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', length: 15, nullable: true, unique: true })
   phone?: string;
 
-  @Unique(['email'])
-  @Column()
+  @Column({ type: 'varchar', length: 100, unique: true })
   email: string;
 
   @Exclude()
   @Column()
   password: string;
 
-  @Unique(['userCode'])
-  @Column()
+  @Column({ type: 'varchar', length: 50, unique: true })
   userCode: string;
 
   @ManyToOne(() => Role, role => role.id)

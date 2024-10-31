@@ -5,10 +5,10 @@ export class CardType extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 50 })
   cardTypeName: string;
 
-  @Column()
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   cardTypePrice: number;
 
   @Column(
