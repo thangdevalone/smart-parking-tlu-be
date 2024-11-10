@@ -29,8 +29,10 @@ export class RoleService extends BaseService<Role, RoleRepository> {
 
     if (createRole.name === SystemRoles.ADMIN && !isAdmin) throw new Error(Messages.common.actionNotPermitted);
 
-    const role = this.store(createRole);
+    const role = await this.store(createRole);
+
     if (!role) throw new NotFoundException(Messages.role.notCreated);
+
     return {
       data: role,
       message: Messages.role.created

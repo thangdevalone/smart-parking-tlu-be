@@ -54,7 +54,7 @@ export class AuthService {
     const newUser = await this.user.store({ ...data, password: passwordHash, role });
 
     const html = `Tài khoản của bạn là ${data.userCode} \nMật khẩu của bạn là ${password}`;
-    const subject = 'Cấp lại mật khẩu';
+    const subject = 'Cấp tài khoản smart_parking!!';
     const send = {
       to: data.email,
       html,

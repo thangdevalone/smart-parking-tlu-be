@@ -8,6 +8,9 @@ export class Card extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ type: 'varchar', length: 20, unique: true, default: null })
+  idCard: string;
+
   @Column({ type: 'varchar', length: 20, unique: true })
   cardCode: string;
 
