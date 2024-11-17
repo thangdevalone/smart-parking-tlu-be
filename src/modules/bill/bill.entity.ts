@@ -43,5 +43,4 @@ export class Bill extends BaseEntity {
     }
   )
   updatedAt: Date;
-
 }

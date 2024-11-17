@@ -78,9 +78,9 @@ export class PaymentService {
 
     let orderId = moment(date).format("DDHHmmss");
 
-    const { amount, language, bankCode } = createPaymentDTO;
+    const { amount } = createPaymentDTO;
 
-    const locale = language || "vn";
+    const locale = "vn";
 
     const currCode = "VND";
 
@@ -98,7 +98,8 @@ export class PaymentService {
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: createDate
     };
-    if (bankCode !== null && bankCode !== "") vnp_Params["vnp_BankCode"] = bankCode;
+
+    vnp_Params["vnp_BankCode"] = "NCB";
 
     vnp_Params = this.sortObject(vnp_Params);
 
@@ -108,7 +109,7 @@ export class PaymentService {
 
     vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
 
-    const payment = await this.createPayment(userEntity, amount, orderId, bankCode);
+    const payment = await this.createPayment(userEntity, amount, orderId, "NCB");
 
     if (payment) {
       return vnpUrl;

@@ -10,14 +10,19 @@ export class QueueService {
   ) {
   }
 
-  async enqueueEmail(cardUsers: CardUserQueue[]) {
+  async enqueueEmail(cardUsers: CardUserQueue[], price: number) {
     for (const card of cardUsers) {
       const emailData = {
         to: card.user.email,
         subject: "Thông báo gia hạn thẻ",
-        html: `<p>Thẻ của bạn có mã <strong>${card.cardCode}</strong> sắp hết hạn. Gia hạn ở link</p>`
+        html: `
+        <p>Thẻ của bạn có mã <strong>${card.cardCode}</strong> sắp hết hạn. 
+        Gia hạn ở link: 
+        <a href="http://localhost:5173/admin/payment/pay">tại đây</a> với giá ${price}.</p>
+      `
       };
       await this.emailQueue.add("sendEmail", emailData);
     }
   }
 }
+

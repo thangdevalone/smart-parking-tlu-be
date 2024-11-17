@@ -26,7 +26,7 @@ export class TicketService {
 
     if (!card) throw new Error(Messages.card.notFound);
 
-    if (card.data.licensePlate !== "") throw new Error(Messages.card.alreadyExists);
+    if (card.data.licensePlate !== "") throw new Error("Thẻ đã checkin trước đó!!");
 
     if (!Image || !Image.buffer) {
       throw new Error("File upload failed or file buffer is undefined");
@@ -77,7 +77,7 @@ export class TicketService {
 
     if (!card) throw new Error(Messages.card.notFound);
 
-    if (card.data.licensePlate === "") throw new Error(Messages.card.alreadyExists);
+    if (card.data.licensePlate === "") throw new Error("Chưa checkin!!");
 
     if (!Image || !Image.buffer) {
       throw new Error("File upload failed or file buffer is undefined");
@@ -111,13 +111,15 @@ export class TicketService {
       }
 
       const bill = await this.billService.getDetail(card.data.user);
+
       if (!bill) new Error(Messages.bill.notFound);
 
       const price = handlePrice(bill.startDate, bill.price, this.handleValidate(card));
 
-      const newBill = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID, price: price });
+      const billUpdate = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID, price: price });
 
-      const history = await this.historyService.findOne({ bill: bill.id, imageOut: null });
+      const history = await this.historyService.getHistoryByBillId(bill.id);
+
       if (!history) new Error(Messages.history.notFound);
 
       await this.historyService.updateHistory(history.id + "", { imageOut: savedOutputImagePath });
@@ -126,7 +128,7 @@ export class TicketService {
 
       return {
         data: {
-          ...newBill,
+          ...billUpdate.data,
           image: savedOutputImagePath
         },
         message: "Thành công!"
@@ -145,6 +147,7 @@ export class TicketService {
     const newMonth = now.getMonth() + 1;
     const newYear = now.getFullYear();
     const [monthCard, yearCard] = card.data.expiration.split("-").pop()?.split("/") || [];
-    return monthCard && yearCard && parseInt(monthCard, 10) > newMonth && parseInt(yearCard, 10) === newYear;
+
+    return monthCard && yearCard && parseInt(monthCard, 10) >= newMonth && parseInt(yearCard, 10) === newYear;
   }
 }
