@@ -13,6 +13,7 @@ export class CreateCardDto {
   cardType: number;
 
   @ApiProperty({ type: String })
+  @IsString({ message: 'INVALID_STRING' })
   idCard: string;
 
   @ApiProperty()

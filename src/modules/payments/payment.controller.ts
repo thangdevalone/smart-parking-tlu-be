@@ -34,7 +34,6 @@ export class PaymentController {
     return await this.paymentService.createPaymentVNP(createPaymentDTO, req, payload.id);
   }
 
-
   @Post("create-payment-user")
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

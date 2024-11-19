@@ -93,7 +93,6 @@ export class CardService extends BaseService<Card, CardRepository> {
 
   async createCard(createCardDto: CreateCardDto) {
     const card = await this.findOne({ cardCode: createCardDto.cardCode });
-
     if (card) throw new Error(Messages.card.alreadyExists);
 
     const cardType = await this.cardTypeService.findOne({ id: createCardDto.cardType });
@@ -106,10 +105,9 @@ export class CardService extends BaseService<Card, CardRepository> {
       const newDate = new Date();
       exp = `${newDate.getMonth() + 1}/${newDate.getFullYear()}`;
     }
-
     const newCard = await this.store({
       idCard: createCardDto.idCard,
-      user: { id: createCardDto.userId },
+      user: { id: createCardDto.userId ?? null },
       cardStatus: CardStatus.ACTIVE,
       expiration: exp,
       cardCode: createCardDto.cardCode,
