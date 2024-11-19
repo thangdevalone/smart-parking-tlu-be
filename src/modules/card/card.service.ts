@@ -33,6 +33,7 @@ export class CardService extends BaseService<Card, CardRepository> {
     queryBuilder.select([
       'entity.id',
       'entity.cardCode',
+      'entity.idCard',
       'entity.licensePlate',
       'entity.cardStatus',
       'entity.createdAt',
