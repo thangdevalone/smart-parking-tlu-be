@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class TicketCheckinDto {
+export class TicketDto {
   @ApiProperty({
     type: String,
     description: 'Card ID'
@@ -13,6 +13,6 @@ export class TicketCheckinDto {
     type: String,
     description: 'Image Url'
   })
-  @IsString({ message: 'Card Id required' })
+  @IsString({ message: 'Image Url Id required' })
   imageUrl: string;
 }

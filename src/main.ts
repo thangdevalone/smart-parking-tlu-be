@@ -18,7 +18,7 @@ async function bootstrap() {
   }));
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/' // Đường dẫn này sẽ được sử dụng trong URL để truy cập tệp
+    prefix: '/uploads/'
   });
 
   app.useGlobalInterceptors(new ResponseInterceptor());

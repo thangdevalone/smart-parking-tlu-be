@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from 'src/shared';
-import { Card } from './card.entity';
-import { CardRepository } from './card.repository';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { LoggerService } from 'src/logger';
-import { CardStatus, PaginationDto } from 'src/types';
-import { Messages } from 'src/config';
-import { CreateCardDto, UpdateCardDto } from './card.dto';
-import { CardTypeService } from '../cardtype';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { BaseService } from "src/shared";
+import { Card } from "./card.entity";
+import { CardRepository } from "./card.repository";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { LoggerService } from "src/logger";
+import { CardStatus, PaginationDto } from "src/types";
+import { Messages } from "src/config";
+import { CreateCardDto, UpdateCardDto } from "./card.dto";
+import { CardTypeService } from "../cardtype";
 
 @Injectable()
 export class CardService extends BaseService<Card, CardRepository> {
@@ -22,32 +22,32 @@ export class CardService extends BaseService<Card, CardRepository> {
   }
 
   async getCards(pagination: PaginationDto) {
-    const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
-    const queryBuilder = this.repository.createQueryBuilder('entity');
+    const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
+    const queryBuilder = this.repository.createQueryBuilder("entity");
 
     if (search.length > 0) {
       queryBuilder
-        .orWhere('card.cardCode LIKE :search', { search: `%${search}%` })
-        .orWhere('card.licensePlate LIKE :search', { search: `%${search}%` });
+        .orWhere("card.cardCode LIKE :search", { search: `%${search}%` })
+        .orWhere("card.licensePlate LIKE :search", { search: `%${search}%` });
     }
     queryBuilder.select([
-      'entity.id',
-      'entity.cardCode',
-      'entity.idCard',
-      'entity.licensePlate',
-      'entity.cardStatus',
-      'entity.createdAt',
-      'entity.updatedAt',
-      'user.fullName',
-      'user.phone',
-      'user.email',
-      'user.userCode'
+      "entity.id",
+      "entity.cardCode",
+      "entity.idCard",
+      "entity.licensePlate",
+      "entity.cardStatus",
+      "entity.createdAt",
+      "entity.updatedAt",
+      "user.fullName",
+      "user.phone",
+      "user.email",
+      "user.userCode"
     ]);
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
-      .leftJoin('entity.user', 'user')
-      .leftJoinAndSelect('entity.cardType', 'cardType')
+      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+      .leftJoin("entity.user", "user")
+      .leftJoinAndSelect("entity.cardType", "cardType")
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
@@ -62,35 +62,41 @@ export class CardService extends BaseService<Card, CardRepository> {
     };
   }
 
+
   async getCardDetail(idCard: string) {
-    const card = await this.repository
-      .createQueryBuilder('card')
-      .leftJoinAndSelect('card.user', 'user')
-      .leftJoinAndSelect('card.cardType', 'cardType')
-      .where('card.idCard = :idCard', { idCard: idCard })
+    const card = await this.repository.createQueryBuilder("card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .where("card.id = :id", { id: +idCard })
       .getOne();
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
 
-    delete card.user.password;
+    if (card.user) {
+      delete card.user.password;
+    }
 
     return {
       data: card
     };
   }
 
-  async getAllCardUser() {
-    const cards = await this.repository
-      .createQueryBuilder('card')
-      .leftJoin('card.user', 'user')
-      .leftJoinAndSelect('card.cardType', 'cardType')
-      .where('user.id IS NOT NULL')
-      .getMany();
+  async getCardDetailIdCardIOT(id: string) {
+    const card = await this.repository
+      .createQueryBuilder("card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .where("card.idCard = :idCard", { idCard: id })
+      .getOne();
 
-    if (!cards || cards.length === 0) throw new NotFoundException(Messages.card.notFound);
+    if (!card) throw new NotFoundException(Messages.card.notFound);
+
+    if (card.user) {
+      delete card.user.password;
+    }
 
     return {
-      data: cards
+      data: card
     };
   }
 
@@ -102,12 +108,13 @@ export class CardService extends BaseService<Card, CardRepository> {
 
     if (!cardType) throw new NotFoundException(Messages.cardType.notFound);
 
-    let exp: string = '';
+    let exp: string = "";
 
-    if (cardType.cardTypeName.includes('thang')) {
+    if (cardType.cardTypeName.includes("thang")) {
       const newDate = new Date();
       exp = `${newDate.getMonth() + 1}/${newDate.getFullYear()}`;
     }
+
     const newCard = await this.store({
       idCard: createCardDto.idCard,
       user: { id: createCardDto.userId ?? null },
@@ -137,13 +144,13 @@ export class CardService extends BaseService<Card, CardRepository> {
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
 
-    const filedUpdate = ['cardCode', 'cardType', 'cardStatus', 'licensePlate', 'user'];
+    const filedUpdate = ["cardCode", "cardType", "cardStatus", "licensePlate", "user"];
 
     filedUpdate.forEach((field) => {
       if (updateCardDto[field]) card[field] = updateCardDto[field];
     });
 
-    if (updatePlate) card['licensePlate'] = '';
+    if (updatePlate) card["licensePlate"] = "";
 
     await this.repository.save(card);
 
