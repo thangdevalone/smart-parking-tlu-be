@@ -21,7 +21,7 @@ export class BillService extends BaseService<Bill, BillRepository> {
     super(billRepository, logger);
   }
 
-  async createBill(user: number, price: number) {
+  async createBill(user: number | null, price: number) {
     const bill = await this.store({
       user,
       price,

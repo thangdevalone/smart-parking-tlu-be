@@ -18,7 +18,7 @@ export class TicketController {
     return await this.ticketService.checkin(checkinDto.cardId, checkinDto.imageUrl);
   }
 
-  @Post("checkin")
+  @Post("checkout")
   @GuardOrAdminRequired()
   public async checkout(@Body() checkinDto: TicketDto) {
     return await this.ticketService.checkout(checkinDto.cardId, checkinDto.imageUrl);
