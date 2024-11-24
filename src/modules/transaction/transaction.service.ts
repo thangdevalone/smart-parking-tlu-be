@@ -37,22 +37,32 @@ export class TransactionService {
     if (!user) throw new NotFoundException(Messages.auth.notFound);
 
     const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: 'vethang' } });
-    // const card = await this.cardRepository.findOne({ where: { cardType, user: null } });
-    // if (card && card.cardStatus === CardStatus.ACTIVE) {
-    // const newDate = new Date();
-    // card.user = user;
-    // card.expiration = `${newDate.getMonth()}/${newDate.getFullYear()}`;
-    // await this.cardRepository.save(card);
-    // const bill = this.billRepository.create({
-    //   user: user,
-    //   billStatus: BillStatus.PAID,
-    //   startDate: new Date(),
-    //   endDate: new Date(),
-    //   price: cardType.cardTypePrice
-    // });
-    // await this.billRepository.save(bill);
-    // }
 
+    if (createPaymentUserDTO.price < cardType.cardTypePrice) {
+      return false;
+    }
+
+    const card = await this.cardRepository
+      .createQueryBuilder('card')
+      .leftJoinAndSelect('card.cardType', 'cardType')
+      .leftJoin('bills', 'bill', 'bill.cardId = card.id')
+      .where('cardType.id = :cardTypeId', { cardTypeId: cardType.id })
+      .andWhere('bill.id IS NULL')
+      .getOne();
+
+    if (!card) throw new NotFoundException('Hết thẻ tháng!!!');
+
+    const startDate = new Date();
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+
+    const bill = this.billRepository.create({
+      user: { id: user.id },
+      price: createPaymentUserDTO.price,
+      startDate,
+      endDate,
+      card: { id: card.id }
+    });
+    await this.billRepository.save(bill);
     return true;
 
   }
