@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Bill } from '../bill';
+import { Card } from '../card';
 
 @Entity('histories')
 export class History extends BaseEntity {
@@ -18,23 +18,9 @@ export class History extends BaseEntity {
   @Column({ nullable: true })
   timeOut?: Date;
 
-  @ManyToOne(() => Bill, bill => bill.id)
-  bill: Bill;
+  @ManyToOne(() => Card, card => card.id)
+  card: Card;
 
-  @Column(
-    {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP'
-    }
-  )
-  createdAt: Date;
-
-  @Column(
-    {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP'
-    }
-  )
-  updatedAt: Date;
+  @Column({ type: 'decimal', scale: 2, precision: 10 })
+  price: number;
 }

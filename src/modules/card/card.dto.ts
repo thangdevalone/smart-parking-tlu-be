@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 import { CardStatus } from 'src/types';
-import { Transform } from 'class-transformer';
 
 export class CreateCardDto {
   @ApiProperty({ type: String, default: 'card code example' })
@@ -15,12 +14,6 @@ export class CreateCardDto {
   @ApiProperty({ type: String })
   @IsString({ message: 'INVALID_STRING' })
   idCard: string;
-
-  @ApiProperty()
-  @Transform(({ value }) => Number(value))
-  @IsNumber({}, { message: 'INVALID_NUMBER 123' })
-  @IsOptional()
-  userId?: number;
 }
 
 export class UpdateCardDto {

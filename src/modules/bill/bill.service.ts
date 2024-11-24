@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { BaseService } from "src/shared";
-import { Bill } from "./bill.entity";
-import { BillRepository } from "./bill.repository";
-import { LoggerService } from "src/logger";
-import { InjectRepository } from "@nestjs/typeorm";
-import { BillStatus, PaginationDto } from "src/types";
-import { UpdateBillDto } from "./bill.dto";
-import { Messages } from "src/config";
-import { Payload } from "../../auth";
-import { User, UserRepository } from "../user";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { BaseService } from 'src/shared';
+import { Bill } from './bill.entity';
+import { BillRepository } from './bill.repository';
+import { LoggerService } from 'src/logger';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from 'src/types';
+import { UpdateBillDto } from './bill.dto';
+import { Messages } from 'src/config';
+import { Payload } from '../../auth';
+import { UserRepository } from '../user';
 
 @Injectable()
 export class BillService extends BaseService<Bill, BillRepository> {
@@ -22,11 +22,14 @@ export class BillService extends BaseService<Bill, BillRepository> {
   }
 
   async createBill(user: number | null, price: number) {
+    const startDate = new Date();
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+
     const bill = await this.store({
-      user,
+      user: { id: user },
       price,
-      billStatus: BillStatus.UNPAID,
-      startDate: new Date()
+      startDate: startDate,
+      endDate: endDate
     });
 
     if (!bill) throw new NotFoundException(Messages.bill.notFound);
@@ -37,8 +40,10 @@ export class BillService extends BaseService<Bill, BillRepository> {
     const bill = await this.findOne({ id });
     if (!bill) throw new NotFoundException(Messages.bill.notFound);
 
-    bill.billStatus = updateBillDTO.billStatus;
-    bill.endDate = new Date();
+    const { user, price } = updateBillDTO;
+
+    if (user) bill.user.id = user;
+    if (price) bill.price = price;
 
     await this.repository.save(bill);
 
@@ -48,11 +53,10 @@ export class BillService extends BaseService<Bill, BillRepository> {
     };
   }
 
-  async getDetail(user: User) {
+  async getDetail(cardId: number) {
     const bill = await this.repository.findOne({
       where: {
-        user: user,
-        billStatus: BillStatus.UNPAID
+        card: { id: cardId }
       }
     });
     if (!bill) throw new NotFoundException(Messages.bill.notFound);
@@ -60,22 +64,22 @@ export class BillService extends BaseService<Bill, BillRepository> {
   }
 
   async paginateBill(payload: Payload, paginate: PaginationDto) {
-    if (payload.role.name.toLowerCase() === "admin") {
+    if (payload.role.name.toLowerCase() === 'admin') {
       return await this.paginate(paginate);
     }
 
-    const { limit = 10, page = 1, sortBy = "createdAt", sortType = "ASC", search = "" } = paginate;
+    const { limit = 10, page = 1, sortBy = 'createdAt', sortType = 'ASC', search = '' } = paginate;
 
     const queryBuilder = this.repository
-      .createQueryBuilder("bill")
-      .where("bill.user = :user", { user: payload.id });
+      .createQueryBuilder('bill')
+      .where('bill.user = :user', { user: payload.id });
 
     if (search) {
-      queryBuilder.andWhere("bill.price LIKE :search", { search: `%${search}%` });
+      queryBuilder.andWhere('bill.price LIKE :search', { search: `%${search}%` });
     }
 
     const [result, total] = await queryBuilder
-      .addOrderBy(`bill.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+      .addOrderBy(`bill.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();

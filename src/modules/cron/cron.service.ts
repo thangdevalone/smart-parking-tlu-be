@@ -54,17 +54,17 @@ export class CronService {
 
     if (!cards || cards.length === 0) throw new NotFoundException(Messages.card.notFound);
 
-    return cards.map(card => ({
-      id: card.id,
-      cardCode: card.cardCode,
-      cardStatus: card.cardStatus,
-      expiration: card.expiration,
-      user: {
-        id: card.user.id,
-        fullName: card.user.fullName,
-        email: card.user.email,
-        userCode: card.user.userCode
-      }
-    }));
+    // return cards.map(card => ({
+    //   id: card.id,
+    //   cardCode: card.cardCode,
+    //   cardStatus: card.cardStatus,
+    //   expiration: card.expiration,
+    //   user: {
+    //     id: card.user.id,
+    //     fullName: card.user.fullName,
+    //     email: card.user.email,
+    //     userCode: card.user.userCode
+    //   }
+    // }));
   }
 }

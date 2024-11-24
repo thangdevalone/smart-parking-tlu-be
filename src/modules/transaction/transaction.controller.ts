@@ -1,21 +1,21 @@
-import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../../auth/guards";
-import { PaymentService } from "./payment.service";
-import { CreatePaymentDTO, CreatePaymentUserDTO, PaymentInfoQueryDto } from "./payment.dto";
-import { Request, Response } from "express";
-import { ReqUser } from "../../decorators";
-import { Payload } from "../../auth";
+import { Body, Controller, Get, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../auth/guards';
+import { TransactionService } from './transaction.service';
+import { CreatePaymentDTO, CreatePaymentUserDTO, PaymentInfoQueryDto } from './transaction.dto';
+import { Request, Response } from 'express';
+import { ReqUser } from '../../decorators';
+import { Payload } from '../../auth';
 
 
-@Controller("payment")
+@Controller('payment')
 
-export class PaymentController {
+export class TransactionController {
   constructor(
-    private readonly paymentService: PaymentService) {
+    private readonly paymentService: TransactionService) {
   }
 
-  @Get("info")
+  @Get('info')
   async getPaymentInfo(
     @Query() query: PaymentInfoQueryDto,
     @Res() res: Response
@@ -23,7 +23,7 @@ export class PaymentController {
     return await this.paymentService.paymentInfoVNP(query, res);
   }
 
-  @Post("vnp/create-payment")
+  @Post('vnp/create-payment')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async createPaymentVNP(
@@ -34,7 +34,7 @@ export class PaymentController {
     return await this.paymentService.createPaymentVNP(createPaymentDTO, req, payload.id);
   }
 
-  @Post("create-payment-user")
+  @Post('create-payment-user')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   async createPaymentUser(

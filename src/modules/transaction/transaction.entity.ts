@@ -1,8 +1,8 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user';
-import { PaymentStatus } from './payment.dto';
+import { PaymentStatus } from './transaction.dto';
 
-@Entity('payments')
+@Entity('transaction')
 export class Payment extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

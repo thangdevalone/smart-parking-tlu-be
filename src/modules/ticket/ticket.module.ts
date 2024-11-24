@@ -5,10 +5,12 @@ import { UserHttpModule } from '../user';
 import { BillModule } from '../bill';
 import { HistoryModule } from '../history';
 import { CardModule } from '../card';
+import { CardTypeModule } from '../cardtype';
 
 @Module({
   imports: [
     forwardRef(() => UserHttpModule),
+    forwardRef(() => CardTypeModule),
     forwardRef(() => BillModule),
     forwardRef(() => HistoryModule),
     forwardRef(() => CardModule)

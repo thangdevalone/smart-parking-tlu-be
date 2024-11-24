@@ -29,8 +29,8 @@ export class BillController {
     return await this.billService.paginateBill(payload, pagination);
   }
 
-  @Get(":id")
-  async getById(@Param("id") id: string) {
+  @Get(':id')
+  async getById(@Param('id') id: string) {
     return {
       data: await this.billService.findOne({ id })
     };

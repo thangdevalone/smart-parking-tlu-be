@@ -1,15 +1,15 @@
-import { Injectable } from "@nestjs/common";
-import { BillService } from "../bill";
-import { HistoryService } from "../history";
-import { CardService } from "../card";
-import axios from "axios";
-import { ConfigService } from "@nestjs/config";
-import { join, resolve } from "path";
-import * as fs from "fs";
-import { BillStatus } from "../../types";
-import { Messages } from "../../config";
-import FormData from "form-data";
-import { handlePrice } from "../../utils";
+import { Injectable } from '@nestjs/common';
+import { BillService } from '../bill';
+import { HistoryService } from '../history';
+import { CardService } from '../card';
+import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
+import { join, resolve } from 'path';
+import * as fs from 'fs';
+import { Messages } from '../../config';
+import FormData from 'form-data';
+import { CardTypeService } from '../cardtype';
+import { handlePrice } from '../../utils';
 
 @Injectable()
 export class TicketService {
@@ -17,6 +17,7 @@ export class TicketService {
     private readonly billService: BillService,
     private readonly historyService: HistoryService,
     private readonly cardService: CardService,
+    private readonly cardTypeService: CardTypeService,
     private config: ConfigService
   ) {
   }
@@ -25,25 +26,25 @@ export class TicketService {
     const card = await this.cardService.getCardDetailIdCardIOT(cardId);
 
     if (!card) throw new Error(Messages.card.notFound);
-    if (card.data.licensePlate !== "") throw new Error("Thẻ đã checkin trước đó!!");
-    if (!imageUrl) throw new Error("No image URL provided.");
+    if (card.data.licensePlate !== '') throw new Error('Thẻ đã checkin trước đó!!');
+    if (!imageUrl) throw new Error('No image URL provided.');
 
-    const uploadsDir = resolve(`${__dirname.split("\\dist")[0]}`, "uploads");
+    const uploadsDir = resolve(`${__dirname.split('\\dist')[0]}`, 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    let savedOutputImagePath = "";
-    let plate = "";
+    let savedOutputImagePath = '';
+    let plate = '';
 
     try {
-      const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data);
-      const imageExtension = imageUrl.split(".").pop();
+      const imageExtension = imageUrl.split('.').pop();
 
-      const allowedExtensions = ["jpg", "jpeg", "png"];
+      const allowedExtensions = ['jpg', 'jpeg', 'png'];
       if (!allowedExtensions.includes(imageExtension.toLowerCase())) {
-        new Error("Unsupported image format. Only JPG and PNG are allowed.");
+        new Error('Unsupported image format. Only JPG and PNG are allowed.');
       }
 
       const timestamp = Date.now();
@@ -52,40 +53,45 @@ export class TicketService {
       fs.writeFileSync(savedImagePath, imageBuffer);
 
       const formData = new FormData();
-      formData.append("image", imageBuffer, `checkin_${cardId}_${timestamp}.png`);
+      formData.append('image', imageBuffer, `checkin_${cardId}_${timestamp}.png`);
 
-      const aiResponse = await axios.post(this.config.get("service.ai"), formData, {
+      const aiResponse = await axios.post(this.config.get('service.ai'), formData, {
         headers: { ...formData.getHeaders() }
       });
 
-      plate = aiResponse.data["text"] ?? "";
-      const outputImagePath = aiResponse.data["output_image_path"];
+      plate = aiResponse.data['text'] ?? '';
+      const outputImagePath = aiResponse.data['output_image_path'];
       const outputImageBuffer = fs.existsSync(outputImagePath) ? fs.readFileSync(outputImagePath) : null;
 
       if (!outputImageBuffer) {
-        new Error("Output image path is invalid or not accessible.");
+        new Error('Output image path is invalid or not accessible.');
       }
 
       savedOutputImagePath = join(uploadsDir, `checkin_output_ai_${timestamp}_${cardId}.png`);
       fs.writeFileSync(savedOutputImagePath, outputImageBuffer);
 
-
     } catch (err) {
       console.error(err);
-      throw new Error("An error occurred while processing the image.");
+      throw new Error('An error occurred while processing the image.');
     }
 
-    await this.cardService.updateCard(card.data.id + "", { licensePlate: plate });
+    await this.cardService.updateCard(card.data.id + '', { licensePlate: plate });
 
-    const bill = await this.billService.createBill(
-      card.data.user ? card.data.user.id : null,
-      this.handleValidate(card) ? 0 : card.data.cardType.cardTypePrice
-    );
-    await this.historyService.createHistory(savedOutputImagePath, bill.id + "");
+    const bill = await this.billService.findOne({ card: { id: card.data.id } });
+
+    let history = null;
+
+    const present = new Date();
+    if (bill && bill.startDate <= present && present <= bill.endDate) {
+      history = await this.historyService.createHistory(savedOutputImagePath, bill.id + '', 0);
+    } else {
+      const cardType = await this.cardTypeService.findOne({ name: 'vengay' });
+      history = await this.historyService.createHistory(savedOutputImagePath, bill.id + '', cardType.cardTypePrice);
+    }
 
     return {
-      data: { ...bill, image: savedOutputImagePath },
-      message: "Thành công!"
+      data: history,
+      message: 'Thành công!'
     };
 
   }
@@ -94,24 +100,24 @@ export class TicketService {
     const card = await this.cardService.getCardDetailIdCardIOT(cardId);
 
     if (!card) throw new Error(Messages.card.notFound);
-    if (card.data.licensePlate === "") throw new Error("Chưa checkin!!");
-    if (!imageUrl) throw new Error("No image URL provided.");
+    if (card.data.licensePlate === '') throw new Error('Chưa checkin!!');
+    if (!imageUrl) throw new Error('No image URL provided.');
 
-    const uploadsDir = resolve(`${__dirname.split("\\dist")[0]}`, "uploads");
+    const uploadsDir = resolve(`${__dirname.split('\\dist')[0]}`, 'uploads');
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    let savedOutputImagePath = "";
+    let savedOutputImagePath = '';
 
     try {
-      const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(response.data);
-      const imageExtension = imageUrl.split(".").pop();
+      const imageExtension = imageUrl.split('.').pop();
 
-      const allowedExtensions = ["jpg", "jpeg", "png"];
+      const allowedExtensions = ['jpg', 'jpeg', 'png'];
       if (!allowedExtensions.includes(imageExtension.toLowerCase())) {
-        new Error("Unsupported image format. Only JPG and PNG are allowed.");
+        new Error('Unsupported image format. Only JPG and PNG are allowed.');
       }
 
       const timestamp = Date.now();
@@ -120,59 +126,51 @@ export class TicketService {
       fs.writeFileSync(savedImagePath, imageBuffer);
 
       const formData = new FormData();
-      formData.append("image", imageBuffer, `checkout_output_ai_${cardId}_${timestamp}.png`);
+      formData.append('image', imageBuffer, `checkout_output_ai_${cardId}_${timestamp}.png`);
 
-      const aiResponse = await axios.post(this.config.get("service.ai"), formData, {
+      const aiResponse = await axios.post(this.config.get('service.ai'), formData, {
         headers: { ...formData.getHeaders() }
       });
 
-      const plateFromAI = aiResponse.data["text"] ?? "";
-      const outputImagePath = aiResponse.data["output_image_path"];
+      const plateFromAI = aiResponse.data['text'] ?? '';
+      const outputImagePath = aiResponse.data['output_image_path'];
       const outputImageBuffer = fs.existsSync(outputImagePath) ? fs.readFileSync(outputImagePath) : null;
 
       if (!outputImageBuffer) {
-        new Error("Output image path is invalid or not accessible.");
+        new Error('Output image path is invalid or not accessible.');
       }
 
       savedOutputImagePath = join(uploadsDir, `checkout_output_ai_${timestamp}_${cardId}.png`);
       fs.writeFileSync(savedOutputImagePath, outputImageBuffer);
 
       if (plateFromAI.trim() !== card.data.licensePlate.trim()) {
-        new Error("License plate does not match.");
+        new Error('License plate does not match.');
       }
 
     } catch (err) {
       console.error(err);
-      throw new Error("An error occurred while processing the image.");
+      throw new Error('An error occurred while processing the image.');
     }
 
-    const bill = await this.billService.getDetail(card.data.user);
-    if (!bill) throw new Error(Messages.bill.notFound);
+    const history = await this.historyService.findOne({
+      card: { id: card.data.id }
+    });
 
-    const price = handlePrice(bill.startDate, bill.price, this.handleValidate(card));
-    const billUpdate = await this.billService.updateBill(bill.id + "", { billStatus: BillStatus.PAID, price: price });
+    if (!history) throw new Error(Messages.history.notFound);
 
-    const history = await this.historyService.getHistoryByBillId(bill.id);
-    if (!history) new Error(Messages.history.notFound);
+    let price = null;
 
-    await this.historyService.updateHistory(history.id + "", { imageOut: savedOutputImagePath });
-    await this.cardService.updateCard(card.data.id + "", { licensePlate: "" }, true);
+    if (history.price !== 0) {
+      price = handlePrice(history.timeIn, history.price, history.price === 0);
+    }
+
+    await this.historyService.updateHistory(history.id + '', { imageOut: savedOutputImagePath, price });
+    await this.cardService.updateCard(card.data.id + '', { licensePlate: '' }, true);
 
     return {
-      data: { ...billUpdate.data, image: savedOutputImagePath },
-      message: "Thành công!"
+      data: { ...history, price, image: savedOutputImagePath },
+      message: 'Thành công!'
     };
   }
 
-  private handleValidate(card: any): boolean {
-    if (!card.data.cardType.cardTypeName.includes("thang")) {
-      return false;
-    }
-    const now = new Date();
-    const newMonth = now.getMonth() + 1;
-    const newYear = now.getFullYear();
-    const [monthCard, yearCard] = card.data.expiration.split("-").pop()?.split("/") || [];
-
-    return monthCard && yearCard && parseInt(monthCard, 10) >= newMonth && parseInt(yearCard, 10) === newYear;
-  }
 }

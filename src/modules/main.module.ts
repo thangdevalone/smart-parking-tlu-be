@@ -7,7 +7,7 @@ import { CardModule } from "./card";
 import { CardTypeModule } from "./cardtype";
 import { MailModule } from "./mail";
 import { TicketModule } from "./ticket";
-import { PaymentModule } from "./payments";
+import { TransactionModule } from "./transaction";
 import { ScheduleModule } from "@nestjs/schedule";
 import { QueueModule } from "./queue/queue.module";
 import { CronModule } from "./cron";
@@ -23,7 +23,7 @@ import { CronModule } from "./cron";
     CardTypeModule,
     MailModule,
     TicketModule,
-    PaymentModule,
+    TransactionModule,
     ScheduleModule.forRoot(),
     CronModule,
     QueueModule

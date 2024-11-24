@@ -1,5 +1,4 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../user';
 import { CardType } from '../cardtype';
 import { CardStatus } from 'src/types';
 
@@ -24,14 +23,8 @@ export class Card extends BaseEntity {
   })
   cardStatus: CardStatus;
 
-  @ManyToOne(() => User, user => user.id)
-  user?: User;
-
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
-
-  @Column({ nullable: true })
-  expiration?: string;
 
   @Column(
     {

@@ -6,4 +6,4 @@ export * from './card';
 export * from './cardtype';
 export * from './bill';
 export * from './ticket';
-export * from './payments';
+export * from './transaction';
