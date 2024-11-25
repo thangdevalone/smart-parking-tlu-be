@@ -1,8 +1,8 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { User } from '../user';
-import { Card } from '../card';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "../user";
+import { Card } from "../card";
 
-@Entity('bills')
+@Entity("bills")
 export class Bill extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -13,7 +13,7 @@ export class Bill extends BaseEntity {
   @Column()
   endDate: Date;
 
-  @Column({ type: 'decimal', scale: 2, precision: 10 })
+  @Column({ type: "decimal", scale: 2, precision: 10 })
   price: number;
 
   @ManyToOne(() => User, user => user.id)
@@ -21,4 +21,21 @@ export class Bill extends BaseEntity {
 
   @ManyToOne(() => Card, card => card.id)
   card: Card;
+
+  @Column(
+    {
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP"
+    }
+  )
+  createdAt: Date;
+
+  @Column(
+    {
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
+    }
+  )
+  updatedAt: Date;
 }

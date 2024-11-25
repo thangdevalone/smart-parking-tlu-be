@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from 'src/shared';
-import { History } from './history.entity';
-import { HistoryRepository } from './history.repository';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { LoggerService } from 'src/logger';
-import { UpdateHistoryDto } from './history.dto';
-import { Messages } from 'src/config';
-import { PaginationDto } from 'src/types';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { BaseService } from "src/shared";
+import { History } from "./history.entity";
+import { HistoryRepository } from "./history.repository";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { LoggerService } from "src/logger";
+import { UpdateHistoryDto } from "./history.dto";
+import { Messages } from "src/config";
+import { PaginationDto } from "src/types";
 
 @Injectable()
 export class HistoryService extends BaseService<History, HistoryRepository> {
@@ -20,15 +20,14 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
   }
 
   async getHistories(pagination: PaginationDto) {
-    const { limit = 10, page = 1, sortBy = 'timeIn', sortType = 'DESC', search = '' } = pagination;
-    const queryBuilder = this.repository.createQueryBuilder('entity');
+    const { limit = 10, page = 1, sortBy = "timeIn", sortType = "DESC", search = "" } = pagination;
+    const queryBuilder = this.repository.createQueryBuilder("entity");
     if (search.length > 0) {
       queryBuilder.orWhere(`entity.fullName LIKE :search`, { search: `%${search}%` });
     }
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`entity.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
-      .leftJoinAndSelect('entity.bill', 'bill')
+      .addOrderBy(`entity.timeIn`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();

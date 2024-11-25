@@ -11,6 +11,7 @@ import { TransactionModule } from "./transaction";
 import { ScheduleModule } from "@nestjs/schedule";
 import { QueueModule } from "./queue/queue.module";
 import { CronModule } from "./cron";
+import { AnalyticsModule } from "./analytics";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CronModule } from "./cron";
     CardTypeModule,
     MailModule,
     TicketModule,
+    AnalyticsModule,
     TransactionModule,
     ScheduleModule.forRoot(),
     CronModule,

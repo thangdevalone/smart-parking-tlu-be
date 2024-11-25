@@ -4,8 +4,9 @@ import { TicketController } from './ticket.controller';
 import { UserHttpModule } from '../user';
 import { BillModule } from '../bill';
 import { HistoryModule } from '../history';
-import { CardModule } from '../card';
+import { Card, CardModule } from "../card";
 import { CardTypeModule } from '../cardtype';
+import { TypeOrmModule } from "@nestjs/typeorm";
 
 @Module({
   imports: [

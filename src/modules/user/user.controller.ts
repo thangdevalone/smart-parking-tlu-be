@@ -45,14 +45,4 @@ export class UserController {
     if (id !== user.id.toString() && user.role.name !== SystemRoles.ADMIN) throw new Error('Unauthorized');
     return await this.userService.updateUser(id, updateUserDto);
   }
-
-  // @Delete()
-  // @AdminRequired()
-  // async deleteUser(
-  //     @Body() deleteUserDto :DeleteMultipleDto
-  // ) {
-  //     return await this.userService.deleteUser(deleteUserDto.ids);
-  // }
-
-
 }

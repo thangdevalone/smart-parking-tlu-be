@@ -89,5 +89,8 @@ export class BaseService<T extends BaseEntity, R extends Repository<T>> implemen
     return this.repository.delete(id);
   }
 
+  count(filter?: any): Promise<number> {
+    return this.repository.count({ where: filter });
+  }
 
 }

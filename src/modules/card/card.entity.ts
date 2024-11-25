@@ -1,23 +1,24 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { CardType } from '../cardtype';
-import { CardStatus } from 'src/types';
+import { BaseEntity, Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { CardType } from "../cardtype";
+import { CardStatus } from "src/types";
+import { Bill } from "../bill";
 
-@Entity('cards')
+@Entity("cards")
 export class Card extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 20, unique: true, default: null })
+  @Column({ type: "varchar", length: 20, unique: true, default: null })
   idCard: string;
 
-  @Column({ type: 'varchar', length: 20, unique: true })
+  @Column({ type: "varchar", length: 20, unique: true })
   cardCode: string;
 
-  @Column({ type: 'varchar', length: 15, default: '' })
+  @Column({ type: "varchar", length: 15, default: "" })
   licensePlate?: string;
 
   @Column({
-    type: 'enum',
+    type: "enum",
     enum: CardStatus,
     default: CardStatus.ACTIVE
   })
@@ -26,19 +27,22 @@ export class Card extends BaseEntity {
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
 
+  @OneToOne(() => Bill, bill => bill.card) // Quan hệ 1-nhiều với Bill
+  bills: Bill; // Thêm thuộc tính bills
+
   @Column(
     {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP'
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP"
     }
   )
   createdAt: Date;
 
   @Column(
     {
-      type: 'timestamp',
-      default: () => 'CURRENT_TIMESTAMP',
-      onUpdate: 'CURRENT_TIMESTAMP'
+      type: "timestamp",
+      default: () => "CURRENT_TIMESTAMP",
+      onUpdate: "CURRENT_TIMESTAMP"
     }
   )
   updatedAt: Date;

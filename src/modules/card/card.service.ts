@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from 'src/shared';
-import { Card } from './card.entity';
-import { CardRepository } from './card.repository';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { LoggerService } from 'src/logger';
-import { CardStatus, PaginationDto } from 'src/types';
-import { Messages } from 'src/config';
-import { CreateCardDto, UpdateCardDto } from './card.dto';
-import { CardTypeService } from '../cardtype';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { BaseService } from "src/shared";
+import { Card } from "./card.entity";
+import { CardRepository } from "./card.repository";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { LoggerService } from "src/logger";
+import { CardStatus, PaginationDto } from "src/types";
+import { Messages } from "src/config";
+import { CreateCardDto, UpdateCardDto } from "./card.dto";
+import { CardTypeService } from "../cardtype";
 
 @Injectable()
 export class CardService extends BaseService<Card, CardRepository> {
@@ -22,46 +22,66 @@ export class CardService extends BaseService<Card, CardRepository> {
   }
 
   async getCards(pagination: PaginationDto) {
-    const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
-    const queryBuilder = this.repository.createQueryBuilder('card');
+    const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
+    const queryBuilder = this.repository.createQueryBuilder("card");
 
     if (search.length > 0) {
       queryBuilder
-        .orWhere('card.cardCode LIKE :search', { search: `%${search}%` })
-        .orWhere('card.licensePlate LIKE :search', { search: `%${search}%` });
+        .where("card.cardCode LIKE :search", { search: `%${search}%` })
+        .orWhere("card.licensePlate LIKE :search", { search: `%${search}%` });
     }
 
+    // Chọn các trường cần thiết
     queryBuilder.select([
-      'card.id',
-      'card.cardCode',
-      'card.idCard',
-      'card.licensePlate',
-      'card.cardStatus',
-      'card.createdAt',
-      'card.updatedAt',
-      'cardType.id',
-      'cardType.name',
-      'bill.id',
-      'user.id',
-      'user.fullName',
-      'user.email'
+      "card.id",
+      "card.idCard",
+      "card.cardCode",
+      "card.licensePlate",
+      "card.cardStatus",
+      "card.createdAt",
+      "card.updatedAt",
+      "cardType.id",
+      "cardType.cardTypeName",
+      "cardType.cardTypePrice",
+      "user.id",
+      "user.fullName"
     ]);
 
     queryBuilder
-      .leftJoinAndSelect('card.cardType', 'cardType')
-      .leftJoinAndSelect('bills', 'bill', 'bill.cardId = card.id') // join bảng Bill
-      .leftJoinAndSelect('bill.user', 'user'); //join bảng User
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .leftJoinAndSelect("card.bills", "bill") // join bảng Bill từ card
+      .leftJoinAndSelect("bill.user", "user"); // join bảng User từ bill
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`card.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+      .addOrderBy(`card.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
 
     const totalPages = Math.ceil(total / limit);
 
+    // Chỉ giữ lại thông tin cần thiết
+    const formattedResults = results.map(card => ({
+      id: card.id,
+      idCard: card.idCard,
+      cardCode: card.cardCode,
+      licensePlate: card.licensePlate,
+      cardStatus: card.cardStatus,
+      createdAt: card.createdAt,
+      updatedAt: card.updatedAt,
+      cardType: {
+        id: card.cardType.id,
+        cardTypeName: card.cardType.cardTypeName,
+        cardTypePrice: card.cardType.cardTypePrice
+      },
+      user: {
+        id: card.bills?.user.id,
+        fullName: card.bills?.user.fullName
+      }
+    }));
+
     return {
-      paginate: results,
+      data: formattedResults,
       page: page,
       totalPages,
       hasNext: page < totalPages,
@@ -70,11 +90,11 @@ export class CardService extends BaseService<Card, CardRepository> {
   }
 
   async getCardDetail(idCard: string) {
-    const card = await this.repository.createQueryBuilder('card')
-      .leftJoinAndSelect('card.cardType', 'cardType')
-      .leftJoinAndSelect('bills', 'bill', 'bill.cardId = card.id')
-      .leftJoinAndSelect('bill.user', 'user')
-      .where('card.id = :id', { id: +idCard })
+    const card = await this.repository.createQueryBuilder("card")
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .leftJoinAndSelect("bills", "bill", "bill.cardId = card.id")
+      .leftJoinAndSelect("bill.user", "user")
+      .where("card.id = :id", { id: +idCard })
       .getOne();
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
@@ -86,9 +106,9 @@ export class CardService extends BaseService<Card, CardRepository> {
 
   async getCardDetailIdCardIOT(id: string) {
     const card = await this.repository
-      .createQueryBuilder('card')
-      .leftJoinAndSelect('card.cardType', 'cardType')
-      .where('card.idCard = :idCard', { idCard: id })
+      .createQueryBuilder("card")
+      .leftJoinAndSelect("card.cardType", "cardType")
+      .where("card.idCard = :idCard", { idCard: id })
       .getOne();
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
@@ -133,13 +153,13 @@ export class CardService extends BaseService<Card, CardRepository> {
 
     if (!card) throw new NotFoundException(Messages.card.notFound);
 
-    const filedUpdate = ['cardCode', 'cardType', 'cardStatus', 'licensePlate', 'user'];
+    const filedUpdate = ["cardCode", "cardType", "cardStatus", "licensePlate", "user"];
 
     filedUpdate.forEach((field) => {
       if (updateCardDto[field]) card[field] = updateCardDto[field];
     });
 
-    if (updatePlate) card['licensePlate'] = '';
+    if (updatePlate) card["licensePlate"] = "";
 
     await this.repository.save(card);
 
