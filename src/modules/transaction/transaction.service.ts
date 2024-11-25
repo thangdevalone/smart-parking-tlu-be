@@ -45,7 +45,7 @@ export class TransactionService {
     const card = await this.cardRepository
       .createQueryBuilder("card")
       .leftJoinAndSelect("card.cardType", "cardType")
-      .leftJoin("bills", "bill", "bill.cardId = card.id")
+      .leftJoinAndSelect("bills", "bill", "bill.cardId = card.id")
       .where("cardType.id = :cardTypeId", { cardTypeId: cardType.id })
       .andWhere("bill.id IS NULL")
       .getOne();

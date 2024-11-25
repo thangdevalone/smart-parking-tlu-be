@@ -153,12 +153,9 @@ export class TicketService {
       throw new Error("An error occurred while processing the image.");
     }
 
-    const history = await this.historyService.findOne({
-      card: card.data.id
-    });
+    const history = await this.historyService.getDetailHistory(card.data.id);
 
     if (!history) throw new Error(Messages.history.notFound);
-
 
     let price = null;
 

@@ -72,4 +72,18 @@ export class HistoryService extends BaseService<History, HistoryRepository> {
     };
   }
 
+  async getDetailHistory(cardId: number) {
+    const history = await this.repository.createQueryBuilder("history")
+      .where("history.timeOut IS NULL")
+      .andWhere("history.imageOut IS NULL")
+      .andWhere("history.cardId = :cardId", { cardId })
+      .getOne();
+
+    if (!history) {
+      throw new NotFoundException(Messages.history.notFound);
+    }
+
+    return history;
+  }
+
 }
