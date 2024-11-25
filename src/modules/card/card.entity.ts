@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CardType } from "../cardtype";
 import { CardStatus } from "src/types";
 import { Bill } from "../bill";
@@ -27,8 +27,8 @@ export class Card extends BaseEntity {
   @ManyToOne(() => CardType, cardType => cardType.id)
   cardType: CardType;
 
-  @OneToOne(() => Bill, bill => bill.card) // Quan hệ 1-nhiều với Bill
-  bills: Bill; // Thêm thuộc tính bills
+  @OneToMany(() => Bill, bill => bill.card)
+  bills: Bill[];
 
   @Column(
     {

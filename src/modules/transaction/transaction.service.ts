@@ -64,7 +64,6 @@ export class TransactionService {
     });
     await this.billRepository.save(bill);
     return true;
-
   }
 
   async createPaymentVNP(createPaymentDTO: CreatePaymentDTO, req: Request, user: number) {

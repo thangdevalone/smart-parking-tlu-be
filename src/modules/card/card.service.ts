@@ -25,13 +25,27 @@ export class CardService extends BaseService<Card, CardRepository> {
     const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
     const queryBuilder = this.repository.createQueryBuilder("card");
 
+    // Điều kiện tìm kiếm
     if (search.length > 0) {
       queryBuilder
         .where("card.cardCode LIKE :search", { search: `%${search}%` })
         .orWhere("card.licensePlate LIKE :search", { search: `%${search}%` });
     }
 
-    // Chọn các trường cần thiết
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const endOfMonth = new Date(startOfMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    queryBuilder
+      .leftJoinAndSelect("card.bills", "bill")
+      .leftJoinAndSelect("bill.user", "user")
+      .andWhere("bill.startDate >= :startOfMonth AND bill.endDate < :endOfMonth", {
+        startOfMonth: startOfMonth.toISOString(),
+        endOfMonth: endOfMonth.toISOString()
+      })
+      .orWhere("bill.id IS NULL"); // Bao gồm các card không có hóa đơn
+
     queryBuilder.select([
       "card.id",
       "card.idCard",
@@ -43,14 +57,12 @@ export class CardService extends BaseService<Card, CardRepository> {
       "cardType.id",
       "cardType.cardTypeName",
       "cardType.cardTypePrice",
+      "bill.id",
       "user.id",
       "user.fullName"
     ]);
 
-    queryBuilder
-      .leftJoinAndSelect("card.cardType", "cardType")
-      .leftJoinAndSelect("card.bills", "bill") // join bảng Bill từ card
-      .leftJoinAndSelect("bill.user", "user"); // join bảng User từ bill
+    queryBuilder.leftJoinAndSelect("card.cardType", "cardType");
 
     const [results, total] = await queryBuilder
       .addOrderBy(`card.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
@@ -60,7 +72,6 @@ export class CardService extends BaseService<Card, CardRepository> {
 
     const totalPages = Math.ceil(total / limit);
 
-    // Chỉ giữ lại thông tin cần thiết
     const formattedResults = results.map(card => ({
       id: card.id,
       idCard: card.idCard,
@@ -74,10 +85,10 @@ export class CardService extends BaseService<Card, CardRepository> {
         cardTypeName: card.cardType.cardTypeName,
         cardTypePrice: card.cardType.cardTypePrice
       },
-      user: {
-        id: card.bills?.user.id,
-        fullName: card.bills?.user.fullName
-      }
+      user: card.bills && card.bills.length > 0 ? {
+        id: card.bills[0].user?.id,
+        fullName: card.bills[0].user?.fullName
+      } : null
     }));
 
     return {
@@ -88,6 +99,7 @@ export class CardService extends BaseService<Card, CardRepository> {
       totalItems: total
     };
   }
+
 
   async getCardDetail(idCard: string) {
     const card = await this.repository.createQueryBuilder("card")
