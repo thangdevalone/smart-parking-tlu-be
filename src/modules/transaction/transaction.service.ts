@@ -30,7 +30,7 @@ export class TransactionService {
     private readonly config: ConfigService) {
   }
 
-  async paginationPayment(pagination: PaginationDto) {
+  async paginationPayment(pagination: PaginationDto, userID: number, isAdmin: boolean) {
     const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
     const queryBuilder = this.transactionRepository.createQueryBuilder("transaction");
 
@@ -43,7 +43,11 @@ export class TransactionService {
         .orWhere("transaction.transactionNo LIKE :search", { search: `%${search}%` });
     }
 
-    queryBuilder.leftJoinAndSelect("transaction.user", "user")
+    if (!isAdmin) {
+      queryBuilder.andWhere("transaction.userId = :userID", { userID });
+    }
+
+    queryBuilder.leftJoinAndSelect("transaction.user", "user");
     queryBuilder.select([
       "transaction.id",
       "transaction.amount",
@@ -58,8 +62,8 @@ export class TransactionService {
       "transaction.createdAt",
       "transaction.updatedAt",
       "user.id",
-      "user.fullName",
-    ])
+      "user.fullName"
+    ]);
 
     const [results, total] = await queryBuilder
       .addOrderBy(`transaction.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")

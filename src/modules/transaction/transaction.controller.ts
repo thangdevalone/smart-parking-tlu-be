@@ -36,10 +36,7 @@ export class TransactionController {
     @Pagination() pagination: PaginationDto,
     @ReqUser() payload: Payload
   ) {
-    if (payload.role.name !== "admin") {
-      return "loi";
-    }
-    return await this.paymentService.paginationPayment(pagination);
+    return await this.paymentService.paginationPayment(pagination, payload.id, payload.role.name !== "admin");
   }
 
 
