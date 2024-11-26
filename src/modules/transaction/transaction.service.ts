@@ -34,7 +34,6 @@ export class TransactionService {
     const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
     const queryBuilder = this.transactionRepository.createQueryBuilder("transaction");
 
-    // Điều kiện tìm kiếm
     if (search.length > 0) {
       queryBuilder
         .where("transaction.bankCode LIKE :search", { search: `%${search}%` })
@@ -44,7 +43,24 @@ export class TransactionService {
         .orWhere("transaction.transactionNo LIKE :search", { search: `%${search}%` });
     }
 
-    // Thực hiện phân trang và sắp xếp
+    queryBuilder.leftJoinAndSelect("transaction.user", "user")
+    queryBuilder.select([
+      "transaction.id",
+      "transaction.amount",
+      "transaction.bankCode",
+      "transaction.bankTranNo",
+      "transaction.cardType",
+      "transaction.orderInfo",
+      "transaction.payDate",
+      "transaction.status",
+      "transaction.txnRef",
+      "transaction.transactionNo",
+      "transaction.createdAt",
+      "transaction.updatedAt",
+      "user.id",
+      "user.fullName",
+    ])
+
     const [results, total] = await queryBuilder
       .addOrderBy(`transaction.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .offset((page - 1) * limit)
