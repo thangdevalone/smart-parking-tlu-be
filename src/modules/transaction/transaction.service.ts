@@ -17,6 +17,7 @@ import { CardTypeRepository } from "../cardtype/cardtype.repository";
 import { CardType } from "../cardtype";
 import { Payload } from "../../auth";
 import { Messages } from "../../config";
+import { PaginationDto } from "../../types";
 
 @Injectable()
 export class TransactionService {
@@ -27,6 +28,39 @@ export class TransactionService {
     @InjectRepository(User) private readonly userRepository: UserRepository,
     @InjectRepository(CardType) private readonly cardTypeRepository: CardTypeRepository,
     private readonly config: ConfigService) {
+  }
+
+  async paginationPayment(pagination: PaginationDto) {
+    const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
+    const queryBuilder = this.transactionRepository.createQueryBuilder("transaction");
+
+    // Điều kiện tìm kiếm
+    if (search.length > 0) {
+      queryBuilder
+        .where("transaction.bankCode LIKE :search", { search: `%${search}%` })
+        .orWhere("transaction.bankTranNo LIKE :search", { search: `%${search}%` })
+        .orWhere("transaction.orderInfo LIKE :search", { search: `%${search}%` })
+        .orWhere("transaction.txnRef LIKE :search", { search: `%${search}%` })
+        .orWhere("transaction.transactionNo LIKE :search", { search: `%${search}%` });
+    }
+
+    // Thực hiện phân trang và sắp xếp
+    const [results, total] = await queryBuilder
+      .addOrderBy(`transaction.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+      .offset((page - 1) * limit)
+      .limit(limit)
+      .getManyAndCount();
+
+    // Tính số trang
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      paginate: results,
+      page: page,
+      totalPages,
+      hasNext: page < totalPages,
+      totalItems: total
+    };
   }
 
   async createPaymentUser(payload: Payload, createPaymentUserDTO: CreatePaymentUserDTO) {
