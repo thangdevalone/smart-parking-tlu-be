@@ -1,14 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from 'src/shared';
-import { Bill } from './bill.entity';
-import { BillRepository } from './bill.repository';
-import { LoggerService } from 'src/logger';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PaginationDto } from 'src/types';
-import { UpdateBillDto } from './bill.dto';
-import { Messages } from 'src/config';
-import { Payload } from '../../auth';
-import { UserRepository } from '../user';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { BaseService } from "src/shared";
+import { Bill } from "./bill.entity";
+import { BillRepository } from "./bill.repository";
+import { LoggerService } from "src/logger";
+import { InjectRepository } from "@nestjs/typeorm";
+import { PaginationDto } from "src/types";
+import { UpdateBillDto } from "./bill.dto";
+import { Messages } from "src/config";
+import { Payload } from "../../auth";
+import { UserRepository } from "../user";
 
 @Injectable()
 export class BillService extends BaseService<Bill, BillRepository> {
@@ -64,22 +64,53 @@ export class BillService extends BaseService<Bill, BillRepository> {
   }
 
   async paginateBill(payload: Payload, paginate: PaginationDto) {
-    if (payload.role.name.toLowerCase() === 'admin') {
-      return await this.paginate(paginate);
+    const { limit = 10, page = 1, sortBy = "createdAt", sortType = "ASC", search = "" } = paginate;
+    if (payload.role.name.toLowerCase() === "admin") {
+      const queryBuilder = this.repository
+        .createQueryBuilder("bill")
+        .leftJoinAndSelect("bill.user", "user")
+        .select([
+          "bill",
+          "user.id",
+          "user.fullName"
+        ]);
+
+
+      if (search) {
+        queryBuilder.andWhere("bill.price LIKE :search", { search: `%${search}%` });
+      }
+
+      const [result, total] = await queryBuilder
+        .orderBy(`bill.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+      return {
+        data: result,
+        total,
+        limit,
+        page
+      };
+
     }
 
-    const { limit = 10, page = 1, sortBy = 'createdAt', sortType = 'ASC', search = '' } = paginate;
 
     const queryBuilder = this.repository
-      .createQueryBuilder('bill')
-      .where('bill.user = :user', { user: payload.id });
+      .createQueryBuilder("bill")
+      .leftJoinAndSelect("bill.user", "user")
+      .select([
+        "bill",
+        "user.id",
+        "user.fullName"
+      ])
+      .where("bill.user = :user", { user: payload.id });
 
     if (search) {
-      queryBuilder.andWhere('bill.price LIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere("bill.price LIKE :search", { search: `%${search}%` });
     }
 
     const [result, total] = await queryBuilder
-      .addOrderBy(`bill.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
+      .addOrderBy(`bill.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
