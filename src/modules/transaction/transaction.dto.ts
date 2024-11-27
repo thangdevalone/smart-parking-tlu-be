@@ -7,9 +7,9 @@ export class CreatePaymentDTO {
 }
 
 export class CreatePaymentUserDTO {
-  @IsNumber()
+  @IsString()
   @IsNotEmpty({ message: 'user is required and must be a string.' })
-  user: number;
+  user: string;
 
   @IsNumber()
   @IsNotEmpty({ message: 'price is required and must be a string.' })

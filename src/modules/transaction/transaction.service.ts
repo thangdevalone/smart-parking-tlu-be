@@ -86,7 +86,7 @@ export class TransactionService {
   async createPaymentUser(payload: Payload, createPaymentUserDTO: CreatePaymentUserDTO) {
     if (payload.role.name.toLowerCase() !== "admin") throw new NotFoundException(Messages.common.actionNotPermitted);
 
-    const user = await this.userRepository.findOne({ where: { id: payload.id } });
+    const user = await this.userRepository.findOne({ where: { id: +createPaymentUserDTO.user } });
 
     if (!user) throw new NotFoundException(Messages.auth.notFound);
 
