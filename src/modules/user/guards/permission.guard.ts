@@ -21,9 +21,7 @@ export class PermissionGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const { user }: { user: Payload } = request;
     const member = await this.user.findById(user.id);
-
     if (!member || !requiredPermissions.includes(member["role"]["name"] as any)) throw new UnauthorizedException(Messages.common.actionNotPermitted);
-
     return true;
   }
 }

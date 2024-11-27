@@ -3,6 +3,7 @@ import { Bill } from "../bill";
 import { History } from "../history";
 import { Between, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { arrayDaysOfData } from "../../types";
 
 @Injectable()
 export class AnalyticsService {
@@ -23,12 +24,47 @@ export class AnalyticsService {
 
     const todayCount = await this.historyRepository.count({ where: { timeIn: Between(today, new Date()) } });
 
-    const average = total ? Math.round(total / 7) : 0;
+    const average = total ? Math.round(total * 100 / 7) / 100 : 0;
+
+    const data = await this.historyRepository
+      .createQueryBuilder("history")
+      .select("DATE_FORMAT(history.timeIn, '%Y-%m-%d')", "date")
+      .addSelect("COUNT(history.id)", "value")
+      .where("history.timeIn BETWEEN :start AND :end", { start, end })
+      .groupBy("DATE_FORMAT(history.timeIn, '%Y-%m-%d')")
+      .orderBy("date", "ASC")
+      .getRawMany();
+
+
+    // console.log("data", data);
+
+    // const valuesTable =
+    //
+    // console.log("start", start);
+    // console.log("end", end);
+
+    // const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
+    //   const date = new Date(start);
+    //   date.setDate(start.getDate() + i);
+    //   return { date: date.toISOString().split("T")[0], value: 0 };
+    // });
+
+    const daysOfWeek = this.daysOfWeek(start);
+    // console.log("data", data);
+
+    // console.log(data.map(item => item.date.toISOString().split("T")[0]));
+
+    // console.log(data);
+
+    const valuesTable = this.changeData(daysOfWeek, data);
 
     return {
-      today: todayCount,
-      average,
-      total
+      data: {
+        today: todayCount,
+        average,
+        total,
+        data: valuesTable
+      }
     };
   }
 
@@ -39,27 +75,39 @@ export class AnalyticsService {
       .createQueryBuilder("history")
       .select("SUM(history.price)", "total")
       .where("history.timeIn BETWEEN :start AND :end", { start, end })
-      .getRawOne();
+      .getRawOne() as unknown as { total: number };
+
 
     const dailyRevenue = await this.historyRepository
       .createQueryBuilder("history")
-      .select("DATE(history.timeIn)", "date")
-      .addSelect("SUM(history.price)", "revenue")
+      .select("DATE_FORMAT(history.timeIn, '%Y-%m-%d')", "date")
+      .addSelect("SUM(history.price)", "value")
       .where("history.timeIn BETWEEN :start AND :end", { start, end })
-      .groupBy("DATE(history.timeIn)")
-      .orderBy("revenue", "DESC")
+      .groupBy("DATE_FORMAT(history.timeIn, '%Y-%m-%d')")
+      .orderBy("date", "ASC")
       .getRawMany();
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = (new Date()).toISOString().split("T")[0];
 
-    const todayRevenue = dailyRevenue.find((r) => r.date === today.toISOString().split("T")[0]);
-    const maxValue = dailyRevenue.length ? Math.max(...dailyRevenue.map((r) => parseFloat(r.revenue))) : 0;
+    let todayRevenue = null;
+    for (const r of dailyRevenue) {
+      if (String(r.date) === String(today)) {
+        todayRevenue = r.value;
+        break;
+      }
+    }
+
+    const maxValue = dailyRevenue.length ? Math.max(...dailyRevenue.map((r) => parseFloat(r.value))) : null;
+
+    const valuesTable = this.changeData(this.daysOfMonth(end), dailyRevenue);
 
     return {
-      today: todayRevenue ? parseFloat(todayRevenue.revenue) : 0,
-      maxValue,
-      total: totalRevenue?.total ? parseFloat(totalRevenue.total) : 0
+      data: {
+        data: valuesTable,
+        today: +todayRevenue ?? 0,
+        maxValue: +maxValue ?? 0,
+        total: +totalRevenue.total ?? 0
+      }
     };
   }
 
@@ -70,18 +118,30 @@ export class AnalyticsService {
       end: new Date(thisMonth.start.getFullYear(), thisMonth.start.getMonth(), 0, 23, 59, 59, 999)
     };
 
-    const thisMonthCount = await this.historyRepository.count({
-      where: { timeIn: Between(thisMonth.start, thisMonth.end) }
-    });
+    const thisMonthData = await this.historyRepository
+      .createQueryBuilder("history")
+      .select("COUNT(history.id)", "count")
+      .where("history.timeIn BETWEEN :start AND :end", { start: thisMonth.start, end: thisMonth.end })
+      .getRawOne();
 
-    const lastMonthCount = await this.historyRepository.count({
-      where: { timeIn: Between(lastMonth.start, lastMonth.end) }
-    });
+    const lastMonthData = await this.historyRepository
+      .createQueryBuilder("history")
+      .select("COUNT(history.id)", "count")
+      .where("history.timeIn BETWEEN :start AND :end", { start: lastMonth.start, end: lastMonth.end })
+      .getRawOne();
+
+    const thisMonthDays = new Date(thisMonth.start.getFullYear(), thisMonth.start.getMonth() + 1, 0).getDate();
+    const lastMonthDays = new Date(lastMonth.start.getFullYear(), lastMonth.start.getMonth() + 1, 0).getDate();
 
     return {
-      thisMonth: thisMonthCount,
-      lastMonth: lastMonthCount,
-      perDay: thisMonthCount ? Math.round(thisMonthCount / new Date().getDate()) : 0
+      thisMonth: {
+        total: Math.round(thisMonthData.count * 100 / lastMonthDays) / 100,
+        countsDays: thisMonthDays
+      },
+      lastMonth: {
+        total: Math.round(lastMonthData.count * 100 / lastMonthDays) / 100,
+        countsDays: lastMonthData.count
+      }
     };
   }
 
@@ -90,32 +150,30 @@ export class AnalyticsService {
 
     const data = await this.historyRepository
       .createQueryBuilder("history")
-      .select("DATE(history.timeIn)", "date")
-      .addSelect("COUNT(history.id)", "count")
+      .select("DATE_FORMAT(history.timeIn, '%Y-%m-%d')", "date")
+      .addSelect("COUNT(history.id)", "value")
       .where("history.timeIn BETWEEN :start AND :end", { start, end })
-      .groupBy("DATE(history.timeIn)")
+      .groupBy("DATE_FORMAT(history.timeIn, '%Y-%m-%d')")
       .orderBy("date", "ASC")
       .getRawMany();
 
     const days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
-      date.setDate(date.getDate() - 6 + i);
+      date.setDate(date.getDate() - 5 + i);
       date.setHours(0, 0, 0, 0);
-      return { date: date.toISOString().split("T")[0], count: 0 };
+      return { date: date.toISOString().split("T")[0], value: 0 };
     });
 
-    data.forEach((entry) => {
-      const day = days.find((d) => d.date === entry.date);
-      if (day) {
-        day.count = parseInt(entry.count, 10);
-      }
-    });
 
-    const total = days.reduce((sum, day) => sum + day.count, 0);
+    const valueTable = this.changeData(days, data);
+
+    const total = data.reduce((sum, day) => sum + +day.value, 0);
 
     return {
-      value: Math.round(total / 7),
-      data: days
+      data: {
+        value: Math.round(total * 100 / 7) / 100,
+        data: valueTable
+      }
     };
   }
 
@@ -131,6 +189,30 @@ export class AnalyticsService {
 
   //private func
 
+  private daysOfWeek(start: Date): arrayDaysOfData[] {
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      return { date: date.toISOString().split("T")[0], value: 0 };
+    });
+  }
+
+  private daysOfMonth(end: Date): arrayDaysOfData[] {
+    return Array.from({ length: end.getDate() }, (_, i) => {
+      const date = new Date(end);
+      date.setDate(end.getDate() - i);
+      return { date: date.toISOString().split("T")[0], value: 0 };
+    });
+  }
+
+  private changeData(date: arrayDaysOfData[], data: arrayDaysOfData[]) {
+    return date.map((item: { date: string, value: number }) => {
+      const day = data.find((d) => {
+        return String(d.date) === String(item.date);
+      });
+      return { date: item.date, value: day ? parseInt(String(day.value), 10) : 0 };
+    });
+  }
 
   // Helper: Lấy khoảng thời gian tuần hiện tại
   private getWeekRange(): { start: Date; end: Date } {

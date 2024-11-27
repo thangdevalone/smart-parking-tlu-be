@@ -13,3 +13,9 @@ export class DeleteMultipleDto {
   @IsNumber({}, { each: true })
   ids: number[];
 }
+
+export interface arrayDaysOfData {
+  date: string;
+  value: number;
+}
+
