@@ -13,6 +13,8 @@ export class AnalyticsController {
   ) {
   }
 
+  // analytics bao ve
+
   @Get("weekly")
   @AdminRequired()
   async getWeekly() {

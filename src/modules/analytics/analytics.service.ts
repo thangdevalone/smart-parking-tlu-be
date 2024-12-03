@@ -135,12 +135,12 @@ export class AnalyticsService {
 
     return {
       thisMonth: {
-        total: Math.round(thisMonthData.count * 100 / lastMonthDays) / 100,
-        countsDays: thisMonthDays
+        value: Math.round(thisMonthData.count * 100 / thisMonthDays) / 100,
+        preDay: +thisMonthData.count
       },
       lastMonth: {
-        total: Math.round(lastMonthData.count * 100 / lastMonthDays) / 100,
-        countsDays: lastMonthData.count
+        value: Math.round(lastMonthData.count * 100 / lastMonthDays) / 100,
+        preDay: +lastMonthData.count
       }
     };
   }
