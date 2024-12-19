@@ -1,23 +1,23 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { Request, Response } from "express";
-import { CreatePaymentDTO, CreatePaymentUserDTO, PaymentInfoQueryDto, PaymentStatus } from "./transaction.dto";
-import moment from "moment";
-import { ConfigService } from "@nestjs/config";
-import * as querystring from "qs";
-import * as crypto from "node:crypto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Payment } from "./transaction.entity";
-import { TransactionRepository } from "./transaction.repository";
-import { BillRepository } from "../bill/bill.repository";
-import { CardRepository } from "../card/card.repository";
-import { User, UserRepository } from "../user";
-import { Bill } from "../bill";
-import { Card } from "../card";
-import { CardTypeRepository } from "../cardtype/cardtype.repository";
-import { CardType } from "../cardtype";
-import { Payload } from "../../auth";
-import { Messages } from "../../config";
-import { PaginationDto } from "../../types";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Request, Response } from 'express';
+import { CreatePaymentDTO, CreatePaymentUserDTO, PaymentInfoQueryDto, PaymentStatus } from './transaction.dto';
+import moment from 'moment';
+import { ConfigService } from '@nestjs/config';
+import * as querystring from 'qs';
+import * as crypto from 'node:crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Payment } from './transaction.entity';
+import { TransactionRepository } from './transaction.repository';
+import { BillRepository } from '../bill/bill.repository';
+import { CardRepository } from '../card/card.repository';
+import { User, UserRepository } from '../user';
+import { Bill } from '../bill';
+import { Card } from '../card';
+import { CardTypeRepository } from '../cardtype/cardtype.repository';
+import { CardType } from '../cardtype';
+import { Payload } from '../../auth';
+import { Messages } from '../../config';
+import { PaginationDto } from '../../types';
 
 @Injectable()
 export class TransactionService {
@@ -31,42 +31,42 @@ export class TransactionService {
   }
 
   async paginationPayment(pagination: PaginationDto, userID: number, isAdmin: boolean) {
-    const { limit = 10, page = 1, sortBy = "id", sortType = "ASC", search = "" } = pagination;
-    const queryBuilder = this.transactionRepository.createQueryBuilder("transaction");
+    const { limit = 10, page = 1, sortBy = 'id', sortType = 'ASC', search = '' } = pagination;
+    const queryBuilder = this.transactionRepository.createQueryBuilder('transaction');
 
     if (search.length > 0) {
       queryBuilder
-        .where("transaction.bankCode LIKE :search", { search: `%${search}%` })
-        .orWhere("transaction.bankTranNo LIKE :search", { search: `%${search}%` })
-        .orWhere("transaction.orderInfo LIKE :search", { search: `%${search}%` })
-        .orWhere("transaction.txnRef LIKE :search", { search: `%${search}%` })
-        .orWhere("transaction.transactionNo LIKE :search", { search: `%${search}%` });
+        .where('transaction.bankCode LIKE :search', { search: `%${search}%` })
+        .orWhere('transaction.bankTranNo LIKE :search', { search: `%${search}%` })
+        .orWhere('transaction.orderInfo LIKE :search', { search: `%${search}%` })
+        .orWhere('transaction.txnRef LIKE :search', { search: `%${search}%` })
+        .orWhere('transaction.transactionNo LIKE :search', { search: `%${search}%` });
     }
 
     if (!isAdmin) {
-      queryBuilder.andWhere("transaction.userId = :userID", { userID });
+      queryBuilder.andWhere('transaction.userId = :userID', { userID });
     }
 
-    queryBuilder.leftJoinAndSelect("transaction.user", "user");
+    queryBuilder.leftJoinAndSelect('transaction.user', 'user');
     queryBuilder.select([
-      "transaction.id",
-      "transaction.amount",
-      "transaction.bankCode",
-      "transaction.bankTranNo",
-      "transaction.cardType",
-      "transaction.orderInfo",
-      "transaction.payDate",
-      "transaction.status",
-      "transaction.txnRef",
-      "transaction.transactionNo",
-      "transaction.createdAt",
-      "transaction.updatedAt",
-      "user.id",
-      "user.fullName"
+      'transaction.id',
+      'transaction.amount',
+      'transaction.bankCode',
+      'transaction.bankTranNo',
+      'transaction.cardType',
+      'transaction.orderInfo',
+      'transaction.payDate',
+      'transaction.status',
+      'transaction.txnRef',
+      'transaction.transactionNo',
+      'transaction.createdAt',
+      'transaction.updatedAt',
+      'user.id',
+      'user.fullName'
     ]);
 
     const [results, total] = await queryBuilder
-      .addOrderBy(`transaction.${sortBy}`, sortType.toUpperCase() === "ASC" ? "ASC" : "DESC")
+      .addOrderBy(`transaction.${sortBy}`, sortType.toUpperCase() === 'ASC' ? 'ASC' : 'DESC')
       .offset((page - 1) * limit)
       .limit(limit)
       .getManyAndCount();
@@ -83,28 +83,30 @@ export class TransactionService {
     };
   }
 
-  async createPaymentUser(payload: Payload, createPaymentUserDTO: CreatePaymentUserDTO) {
-    if (payload.role.name.toLowerCase() !== "admin") throw new NotFoundException(Messages.common.actionNotPermitted);
+  async createPaymentUser(payload: Payload, createPaymentUserDTO: CreatePaymentUserDTO, res: Response) {
+    if (payload.role.name.toLowerCase() !== 'admin') throw new NotFoundException(Messages.common.actionNotPermitted);
 
     const user = await this.userRepository.findOne({ where: { id: +createPaymentUserDTO.user } });
 
     if (!user) throw new NotFoundException(Messages.auth.notFound);
 
-    const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: "vethang" } });
+    const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: 'vethang' } });
 
     if (createPaymentUserDTO.price < cardType.cardTypePrice) {
       return false;
     }
 
     const card = await this.cardRepository
-      .createQueryBuilder("card")
-      .leftJoinAndSelect("card.cardType", "cardType")
-      .leftJoinAndSelect("bills", "bill", "bill.cardId = card.id")
-      .where("cardType.id = :cardTypeId", { cardTypeId: cardType.id })
-      .andWhere("bill.id IS NULL")
+      .createQueryBuilder('card')
+      .leftJoinAndSelect('card.cardType', 'cardType')
+      .leftJoinAndSelect('bills', 'bill', 'bill.cardId = card.id')
+      .where('cardType.id = :cardTypeId', { cardTypeId: cardType.id })
+      .andWhere('bill.id IS NULL')
       .getOne();
 
-    if (!card) throw new NotFoundException("Hết thẻ tháng!!!");
+    if (!card) {
+      return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
+    }
 
     const startDate = new Date();
     const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
@@ -123,58 +125,58 @@ export class TransactionService {
   async createPaymentVNP(createPaymentDTO: CreatePaymentDTO, req: Request, user: number) {
     const userEntity = await this.userRepository.findOne({ where: { id: user } });
     const isValidate = await this.handleValidate(userEntity) as unknown as boolean;
-    if (isValidate) throw new NotFoundException("Bạn đã gia hạn tháng này!");
+    if (isValidate) throw new NotFoundException('Bạn đã gia hạn tháng này!');
 
     const date = new Date();
-    let createDate = moment(date).format("YYYYMMDDHHmmss");
+    let createDate = moment(date).format('YYYYMMDDHHmmss');
 
-    let ipAddr = req.headers["x-forwarded-for"] || "192.168.1.1";
+    let ipAddr = req.headers['x-forwarded-for'] || '192.168.1.1';
 
-    const tmnCode = this.config.get("payment.vnp.tmnCode");
-    const secretKey = this.config.get("payment.vnp.hashSecret");
-    let vnpUrl = this.config.get("payment.vnp.url");
-    const returnUrl = this.config.get("payment.vnp.returnUrl");
+    const tmnCode = this.config.get('payment.vnp.tmnCode');
+    const secretKey = this.config.get('payment.vnp.hashSecret');
+    let vnpUrl = this.config.get('payment.vnp.url');
+    const returnUrl = this.config.get('payment.vnp.returnUrl');
 
-    let orderId = moment(date).format("DDHHmmss");
+    let orderId = moment(date).format('DDHHmmss');
 
     const { amount } = createPaymentDTO;
 
-    const locale = "vn";
+    const locale = 'vn';
 
-    const currCode = "VND";
+    const currCode = 'VND';
 
     let vnp_Params: any = {
-      vnp_Version: "2.1.0",
-      vnp_Command: "pay",
+      vnp_Version: '2.1.0',
+      vnp_Command: 'pay',
       vnp_TmnCode: tmnCode,
       vnp_Locale: locale,
       vnp_CurrCode: currCode,
       vnp_TxnRef: orderId,
       vnp_OrderInfo: `Thanh toan cho ma GD: ${orderId}`,
-      vnp_OrderType: "other",
+      vnp_OrderType: 'other',
       vnp_Amount: amount * 100,
-      vnp_ReturnUrl: returnUrl || "http://localhost:8080/payment/info",
+      vnp_ReturnUrl: returnUrl || 'http://localhost:8080/payment/info',
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: createDate
     };
 
 
-    vnp_Params["vnp_BankCode"] = "NCB";
+    vnp_Params['vnp_BankCode'] = 'NCB';
 
     vnp_Params = this.sortObject(vnp_Params);
 
     const signData = querystring.stringify(vnp_Params, { encode: false });
-    const hmac = crypto.createHmac("sha512", secretKey);
-    vnp_Params["vnp_SecureHash"] = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+    const hmac = crypto.createHmac('sha512', secretKey);
+    vnp_Params['vnp_SecureHash'] = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-    vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: false });
+    vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
 
-    const payment = await this.createPayment(userEntity, amount, orderId, "NCB");
+    const payment = await this.createPayment(userEntity, amount, orderId, 'NCB');
 
     if (payment) {
       return vnpUrl;
     }
-    throw new Error("Lỗi hệ thống");
+    throw new Error('Lỗi hệ thống');
   }
 
   async paymentInfoVNP(queryDTO: PaymentInfoQueryDto, res: Response) {
@@ -186,25 +188,27 @@ export class TransactionService {
       vnp_TransactionNo
     } = queryDTO;
 
-    if (vnp_ResponseCode === "00") {
-      const payment = await this.transactionRepository.findOne({ where: { txnRef: vnp_TxnRef }, relations: ["user"] });
+    if (vnp_ResponseCode === '00') {
+      const payment = await this.transactionRepository.findOne({ where: { txnRef: vnp_TxnRef }, relations: ['user'] });
       if (payment) {
-        const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: "vethang" } });
+        const cardType = await this.cardTypeRepository.findOne({ where: { cardTypeName: 'vethang' } });
         const price = payment.amount;
 
         if (price < cardType.cardTypePrice) {
-          return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+          return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
         }
 
         const card = await this.cardRepository
-          .createQueryBuilder("card")
-          .leftJoinAndSelect("card.cardType", "cardType")
-          .leftJoin("bills", "bill", "bill.cardId = card.id")
-          .where("cardType.id = :cardTypeId", { cardTypeId: cardType.id })
-          .andWhere("bill.id IS NULL")
+          .createQueryBuilder('card')
+          .leftJoinAndSelect('card.cardType', 'cardType')
+          .leftJoin('bills', 'bill', 'bill.cardId = card.id')
+          .where('cardType.id = :cardTypeId', { cardTypeId: cardType.id })
+          .andWhere('bill.id IS NULL')
           .getOne();
 
-        if (!card) throw new NotFoundException("Hết thẻ tháng!!!");
+        if (!card) {
+          return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
+        }
 
         const startDate = new Date();
         const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
@@ -225,10 +229,10 @@ export class TransactionService {
         payment.transactionNo = vnp_TransactionNo;
         await this.transactionRepository.save(payment);
 
-        return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=00");
+        return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=00');
       }
     } else {
-      return res.redirect("http://localhost:5173/admin/payment/pay?statusPayment=04");
+      return res.redirect('http://localhost:5173/admin/payment/pay?statusPayment=04');
     }
   }
 
@@ -254,7 +258,7 @@ export class TransactionService {
   private async createPayment(userEntity: User, amount: number, orderId: string, bankCode?: string) {
     const payment = this.transactionRepository.create({
       amount,
-      bankCode: bankCode || "",
+      bankCode: bankCode || '',
       orderInfo: `Thanh toan cho ma GD: ${orderId}`,
       payDate: new Date().toISOString(),
       txnRef: orderId,
@@ -277,7 +281,7 @@ export class TransactionService {
     }
     str.sort();
     for (key = 0; key < str.length; key++) {
-      sorted[str[key]] = encodeURIComponent(data[str[key]]).replace(/%20/g, "+");
+      sorted[str[key]] = encodeURIComponent(data[str[key]]).replace(/%20/g, '+');
     }
     return sorted;
   }
