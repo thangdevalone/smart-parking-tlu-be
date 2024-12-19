@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsBoolean, IsString } from 'class-validator';
 
 export class TicketDto {
   @ApiProperty({
@@ -15,4 +15,11 @@ export class TicketDto {
   })
   @IsString({ message: 'Image Url Id required' })
   imageUrl: string;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Indicates whether to process with AI'
+  })
+  @IsBoolean({ message: 'withAI must be a boolean value' })
+  withAI: boolean;
 }
