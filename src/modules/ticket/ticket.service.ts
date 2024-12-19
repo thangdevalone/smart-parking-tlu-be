@@ -76,7 +76,7 @@ export class TicketService {
         throw new Error('An error occurred while processing the image.');
       }
     } else {
-      plate = 'N/A';
+      plate = 'checkin';
       savedOutputImagePath = imageUrl;
     }
 
@@ -95,7 +95,10 @@ export class TicketService {
     await this.cardService.updateCard(card.data.id + '', { licensePlate: plate });
 
     return {
-      data: history.data,
+      data: {
+        ...history.data,
+        plate
+      },
       message: 'Thành công!'
     };
   }
@@ -113,13 +116,13 @@ export class TicketService {
     }
 
     let savedOutputImagePath = '';
+    let plate;
 
     if (withAI) {
       try {
         const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
         const imageBuffer = Buffer.from(response.data);
         const imageExtension = imageUrl.split('.').pop();
-
         const allowedExtensions = ['jpg', 'jpeg', 'png'];
         if (!allowedExtensions.includes(imageExtension.toLowerCase())) {
           new Error('Unsupported image format. Only JPG and PNG are allowed.');
@@ -138,6 +141,7 @@ export class TicketService {
         });
 
         const plateFromAI = aiResponse.data['text'] ?? '';
+        plate = plateFromAI;
         const outputImagePath = aiResponse.data['output_image_path'];
         const outputImageBuffer = fs.existsSync(outputImagePath) ? fs.readFileSync(outputImagePath) : null;
 
@@ -177,7 +181,10 @@ export class TicketService {
     await this.cardService.updateCard(card.data.id + '', { licensePlate: '' }, true);
 
     return {
-      data: updateHistory.data,
+      data: {
+        ...updateHistory.data,
+        plate
+      },
       message: 'Thành công!'
     };
   }
